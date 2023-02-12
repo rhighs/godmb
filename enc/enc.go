@@ -20,6 +20,23 @@ import (
 	"layeh.com/gopus"
 )
 
+type PlayerEvent int
+type PlayerState int
+
+const (
+	PlayerEventTrackEnded PlayerEvent = iota
+	PlayerEventPaused
+	PlayerEventStopped
+	PlayerEventResumed
+)
+
+const (
+	PlayerStatePlaying PlayerState = iota
+	PlayerStateStopped
+	PlayerStatePaused
+	PlayerStateIdle
+)
+
 type EncOptions struct {
 	PcmOptions
 	FrameSize     int
@@ -28,7 +45,9 @@ type EncOptions struct {
 }
 
 type Enc struct {
-	encoder *gopus.Encoder
+	encoder   *gopus.Encoder
+	listeners map[PlayerEvent][]func(PlayerEvent)
+	State     PlayerState
 }
 
 type CacheOverflowError struct {
@@ -64,13 +83,31 @@ func DefaultOptions(ffmpegPath string) EncOptions {
 	}
 }
 
-func NewEnc(opts EncOptions) (out Enc) {
+func NewEnc(opts EncOptions) (out *Enc) {
 	enc, err := gopus.NewEncoder(opts.SampleRate, opts.Channels, gopus.Audio)
 	if err != nil {
 		panic(err)
 	}
-	return Enc{
-		encoder: enc,
+	return &Enc{
+		encoder:   enc,
+		listeners: make(map[PlayerEvent][]func(PlayerEvent)),
+		State:     PlayerStateIdle,
+	}
+}
+
+func (e *Enc) Listen(event PlayerEvent, action func(PlayerEvent)) {
+	if _, ok := e.listeners[event]; !ok {
+		e.listeners[event] = make([]func(PlayerEvent), 0)
+	}
+
+	e.listeners[event] = append(e.listeners[event], action)
+}
+
+func (e *Enc) Notify(event PlayerEvent) {
+	if actions, ok := e.listeners[event]; ok {
+		for _, action := range actions {
+			action(event)
+		}
 	}
 }
 
@@ -163,6 +200,8 @@ func (e *Enc) GetOpusFrames(input string, opts EncOptions, ch chan<- []byte, err
 	paused := false
 	loop := false
 
+	e.State = PlayerStatePlaying
+
 loop:
 	for {
 		select {
@@ -173,26 +212,36 @@ loop:
 		case receivedCmd := <-cmdCh:
 			switch v := receivedCmd.(type) {
 			case CommandStop:
+				e.State = PlayerStateStopped
+				e.Notify(PlayerEventStopped)
 				if encoderRunning {
 					encoderStop <- struct{}{}
 				}
 				break loop
 			case CommandPause:
 				paused = true
+				e.State = PlayerStatePaused
+				e.Notify(PlayerEventPaused)
 			case CommandResume:
 				paused = false
+				e.State = PlayerStatePlaying
+				e.Notify(PlayerEventResumed)
 			case CommandStartLooping:
+				e.State = PlayerStatePlaying
 				loop = true
 			case CommandSeek:
 				nof = int(float32(v) * framesPerSecond)
 			case CommandStopLooping:
 				loop = false
+			case CommandGetPlaybackTime:
+				respCh <- ResponsePlaybackTime(float32(nof / int(framesPerSecond)))
 			case CommandGetDuration:
-				if encoderRunning {
-					respCh <- ResponseDurationUnknown{}
-				} else {
-					respCh <- ResponseDuration(float32(len(opusFrames)) / framesPerSecond)
-				}
+				//if encoderRunning {
+				//	respCh <- ResponseDurationUnknown{}
+				//} else {
+				//	respCh <- ResponseDuration(float32(len(opusFrames)) / framesPerSecond)
+				//}
+				respCh <- ResponseDuration(float32(len(opusFrames)) / framesPerSecond)
 			}
 		default:
 			time.Sleep(2 * time.Millisecond)
@@ -229,4 +278,7 @@ loop:
 		// this channel often get stuck so a panic is more helpful than that.
 		close(respCh)
 	}
+
+	e.State = PlayerStateIdle
+	e.Notify(PlayerEventTrackEnded)
 }

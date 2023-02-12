@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"log"
 	"os"
 )
 
@@ -13,6 +13,7 @@ type BotConfig struct {
 	GuildIds []string `json:"guildIds"`
 }
 
+// Loads the bot config data, panics on read errors
 func LoadConfig(optpath ...string) (out BotConfig) {
 	path := DEFAULT_PATH
 	if len(optpath) > 0 {
@@ -24,7 +25,9 @@ func LoadConfig(optpath ...string) (out BotConfig) {
 		panic(err)
 	}
 
-	buf, _ := ioutil.ReadAll(reader)
-	json.Unmarshal(buf, &out)
+	err = json.NewDecoder(reader).Decode(&out)
+	if err != nil {
+		log.Fatal(err)
+	}
 	return out
 }

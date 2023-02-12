@@ -1,229 +1,99 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"io"
 	"log"
-	"ndmb/enc"
-	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 
-	"github.com/Pauloo27/searchtube"
 	dgo "github.com/bwmarrin/discordgo"
 )
 
-type PlaybackState int
-
-const (
-	PlaybackStateIdle PlaybackState = iota
-	PlaybackStatePlaying
-	PlaybackStateStopped
-	PlaybackStatePaused
-	PlaybackStateLooping
-)
-
-type Track struct {
-	Title    string
-	WebURL   string
-	MediaURL string
-}
-
-type Playback struct {
-	Track
-	Queue             []Track
-	PlayerCommandChan chan enc.Command
-	state             PlaybackState
-}
-
-type Client struct {
-	Session *dgo.Session
-	Players map[string]Playback
-}
-
-func NewClient(s *dgo.Session, guildIds []string) Client {
-	c := Client{
-		Players: make(map[string]Playback),
-		Session: s,
-	}
-
-	for _, gId := range guildIds {
-		p := Playback{
-			PlayerCommandChan: make(chan enc.Command),
-			Queue:             make([]Track, 0),
-		}
-		c.Players[gId] = p
-	}
-
-	return c
-}
-
 var (
-	s              *dgo.Session
 	RemoveCommands bool = false
 )
 
-var (
-	commands = []*dgo.ApplicationCommand{
-		{
-			Name:        "play",
-			Description: "Plays a song",
-			Options: []*dgo.ApplicationCommandOption{
-				{
-					Name:        "input",
-					Type:        dgo.ApplicationCommandOptionString,
-					Description: "Resource url or youtube search",
-				},
-			},
-		},
-		{
-			Name:        "stop",
-			Description: "Stops the current song",
-		},
-	}
+const (
+	PLAY_COMMAND_NAME   = "play"
+	NEXT_COMMAND_NAME   = "next"
+	STOP_COMMAND_NAME   = "stop"
+	PAUSE_COMMAND_NAME  = "pause"
+	RESUME_COMMAND_NAME = "resume"
+	SEEK_COMMAND_NAME   = "ff"
 )
 
-func ResolveAudioSource(input string) (string, string, error) {
-	webUrl := ""
-	if IsYoutubeUrl(input) {
-		webUrl = input
-		mediaUrl, err := YoutubeMediaUrl(input)
-		if err != nil {
-			return "", webUrl, err
-		}
-		return mediaUrl, webUrl, nil
-	}
-
-	// Might be a direct http stream
-	if strings.HasPrefix(input, "http") {
-		return input, webUrl, nil
-	}
-
-	results, err := searchtube.Search(input, 1)
-	if err != nil {
-		return "", webUrl, err
-	}
-
-	webUrl = results[0].URL
-
-	mediaUrl, err := YoutubeMediaUrl(webUrl)
-	if err != nil {
-		return "", webUrl, err
-	}
-
-	return mediaUrl, webUrl, nil
-}
-
-func FetchHttpMediaStream(mediaUrl string) (io.ReadCloser, int64, error) {
-	req, err := http.NewRequest("GET", mediaUrl, nil)
-	if err != nil {
-		log.Println("Error preparing media stream request:", err)
-		return nil, 0, err
-	}
-
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Println("Error sending media stream request:", err)
-		return nil, 0, err
-	}
-
-	return resp.Body, resp.ContentLength, nil
-}
-
-func InteractionTextRespond(s *dgo.Session, i *dgo.InteractionCreate, message string) {
-	s.InteractionRespond(i.Interaction, &dgo.InteractionResponse{
-		Type: dgo.InteractionResponseChannelMessageWithSource,
-		Data: &dgo.InteractionResponseData{
-			Content: message,
+var commands = []*dgo.ApplicationCommand{
+	{
+		Name:        PLAY_COMMAND_NAME,
+		Description: "Plays a song",
+		Options: []*dgo.ApplicationCommandOption{
+			{
+				Name:        "input",
+				Type:        dgo.ApplicationCommandOptionString,
+				Description: "Raw media URL | YT web url | YT searchbar",
+				Required:    true,
+			},
 		},
-	})
-}
-
-func InteractionRespondDeferred(s *dgo.Session, i *dgo.InteractionCreate) {
-	s.InteractionRespond(i.Interaction, &dgo.InteractionResponse{
-		Type: dgo.InteractionResponseDeferredChannelMessageWithSource,
-		Data: &dgo.InteractionResponseData{
-			Flags: dgo.MessageFlagsLoading,
+	},
+	{
+		Name:        SEEK_COMMAND_NAME,
+		Description: "Fast forwards a song by a certain amount of seconds",
+		Options: []*dgo.ApplicationCommandOption{
+			{
+				Name:        "input",
+				Type:        dgo.ApplicationCommandOptionInteger,
+				Description: "Amount of seconds to skip",
+				Required:    true,
+			},
 		},
-	})
-}
-
-func (c *Client) PlayCommand(s *dgo.Session, i *dgo.InteractionCreate) {
-	genericErrorMessage := "Some error occurred while trying to join channel, try again."
-
-	InteractionRespondDeferred(s, i)
-
-	voiceChannelId := ""
-	g, err := s.State.Guild(i.GuildID)
-	if err != nil {
-		InteractionTextRespond(s, i, "Couldn't any guild with id: "+i.GuildID) // Unlikely to happen
-		return
-	}
-
-	for _, vs := range g.VoiceStates {
-		if vs.UserID == i.Member.User.ID {
-			voiceChannelId = vs.ChannelID
-			break
-		}
-	}
-
-	voiceConnection, err := s.ChannelVoiceJoin(i.GuildID, voiceChannelId, false, true)
-	if err != nil {
-		if i.Interaction != nil {
-			InteractionTextRespond(s, i, genericErrorMessage)
-		}
-		return
-	}
-
-	options := i.ApplicationCommandData().Options
-	optionsMap := make(map[string]*dgo.ApplicationCommandInteractionDataOption, len(options))
-	for _, opt := range options {
-		optionsMap[opt.Name] = opt
-	}
-
-	userInput := optionsMap["input"].Value.(string) // assume a string, because yes
-	mediaUrl, webUrl, err := ResolveAudioSource(userInput)
-	if err != nil {
-		InteractionTextRespond(s, i, genericErrorMessage)
-		return
-	}
-
-	InteractionTextRespond(s, i, "Playing: "+webUrl)
-
-	// Here buffering has to be implemented, also opus packets must be send at the correct rate
-	ffmpegPath := "/usr/bin/ffmpeg"
-	e := enc.NewEnc(enc.DefaultOptions(ffmpegPath))
-
-	errCh := make(chan error)
-	cmdCh := make(chan enc.Command)
-	respCh := make(chan enc.Response)
-
-	go func() {
-		// cmdCh would ideally be saved in a guild queue
-		e.GetOpusFrames(mediaUrl, enc.DefaultOptions(ffmpegPath), voiceConnection.OpusSend, errCh, cmdCh, respCh)
-		close(errCh)
-		close(respCh)
-		close(cmdCh)
-	}()
-
-	go func() {
-	loop:
-		for {
-			select {
-			case err := <-errCh:
-				log.Println("[ENCODER ERROR]:", err)
-				break loop
-			case response := <-respCh:
-				log.Println("[RESPONSE]:", response)
-			}
-		}
-	}()
+	},
+	{
+		Name:        STOP_COMMAND_NAME,
+		Description: "Stops the current song",
+	},
+	{
+		Name:        NEXT_COMMAND_NAME,
+		Description: "Play the next song immediately",
+	},
+	{
+		Name:        RESUME_COMMAND_NAME,
+		Description: "Resumes a paused song",
+	},
+	{
+		Name:        RESUME_COMMAND_NAME,
+		Description: "Pauses a playing song",
+	},
 }
 
 func main() {
-	botData := LoadConfig()
+	userHome, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+
+	flags := flag.NewFlagSet("ndmb", flag.ContinueOnError)
+	ffmpegPath := flags.String(
+		"ffmpeg",
+		"/usr/bin/ffmpeg",
+		"Path to ffmpeg executable",
+	)
+	ytdlpPath := flags.String(
+		"ytdlp",
+		userHome+"/.local/bin/yt-dlp",
+		"Path to ffmpeg executable",
+	)
+	configPath := flags.String(
+		"config",
+		"./config/bot-data.json",
+		"Bot config file",
+	)
+	flags.Parse(os.Args[1:])
+
+	SetFfmpegPath(*ffmpegPath)
+	SetYtdlpPath(*ytdlpPath)
+
+	botData := LoadConfig(*configPath)
 	s, err := dgo.New("Bot " + botData.Token)
 	if err != nil {
 		panic(err)
@@ -237,9 +107,23 @@ func main() {
 	})
 
 	s.AddHandler(func(s *dgo.Session, i *dgo.InteractionCreate) {
-		switch i.ApplicationCommandData().Name {
-		case "play":
+		commandName := i.ApplicationCommandData().Name
+		log.Printf("User %s from channel %s invoked command: %s\n", i.Member.User.Username, i.GuildID, commandName)
+		switch commandName {
+		case PLAY_COMMAND_NAME:
 			client.PlayCommand(s, i)
+		case NEXT_COMMAND_NAME:
+			client.NextCommand(s, i)
+		case STOP_COMMAND_NAME:
+			client.StopCommand(s, i)
+		case PAUSE_COMMAND_NAME:
+			client.PauseCommand(s, i)
+		case RESUME_COMMAND_NAME:
+			client.ResumeCommand(s, i)
+		case SEEK_COMMAND_NAME:
+			client.SeekCommand(s, i)
+		default:
+			log.Printf("%s no such command: %s\n", i.GuildID, commandName)
 		}
 	})
 
