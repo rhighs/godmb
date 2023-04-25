@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/Pauloo27/searchtube v0.0.0-20220521202404-f65e288832a0
-	github.com/bwmarrin/discordgo v0.27.0
+	github.com/bwmarrin/discordgo v0.27.1
 	layeh.com/gopus v0.0.0-20210501142526-1ee02d434e32
 )
 

@@ -3,24 +3,23 @@ package main
 import (
 	"io"
 	"log"
-	"ndmb/enc"
 	"net/http"
 	"strings"
+
+	"ndmb/enc"
 
 	"github.com/Pauloo27/searchtube"
 	dgo "github.com/bwmarrin/discordgo"
 )
 
-var (
-    FfmpegPath string = ""
-)
+var FfmpegPath string = ""
 
 func SetFfmpegPath(path string) {
-    FfmpegPath = path
+	FfmpegPath = path
 }
 
 func GetFfmpegPath() string {
-    return FfmpegPath
+	return FfmpegPath
 }
 
 func ResolveAudioSource(input string) (Track, error) {
@@ -52,24 +51,31 @@ func ResolveAudioSource(input string) (Track, error) {
 		return track, nil
 	}
 
-	results, err := searchtube.Search(input, 1)
+	results := []*searchtube.SearchResult{}
+	searchResults, err := searchtube.Search(input, 1)
 	if err != nil {
 		return track, err
+	}
+
+	for _, r := range searchResults {
+		if r.Live == false {
+			results = append(results, r)
+		}
 	}
 
 	webUrl = results[0].URL
 
-	mediaUrl, err := YoutubeMediaUrl(webUrl)
+    mediaUrl, err := YoutubeMediaUrl(webUrl)
 	if err != nil {
-		return track, err
-	}
+        return track, err
+    }
 
 	track.MediaURL = mediaUrl
 	track.WebURL = webUrl
 	track.Title, err = GetYTVideoTitle(webUrl)
 	if err != nil {
-		return track, err
-	}
+        return track, err
+    }
 
 	return track, nil
 }

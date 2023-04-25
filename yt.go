@@ -91,7 +91,6 @@ func YoutubeMediaUrl(videoUrl string) (string, error) {
 		"--dump-single-json",
 		"--no-warnings",
 		"--call-home",
-		"--prefer-free-formats",
 		"--youtube-skip-dash-manifest",
 		"--rm-cache-dir",
 		videoUrl,
@@ -112,13 +111,11 @@ func YoutubeMediaUrl(videoUrl string) (string, error) {
 	}
 
 	var ytdlOutput YTDLPOut
-
 	if err := json.Unmarshal(stdout, &ytdlOutput); err != nil {
 		log.Fatal(err)
 		return "", err
 	}
 
-	// Just get the first one including opus
 	for _, format := range ytdlOutput.Formats {
 		if format.Vcodec == "none" && format.Acodec == "opus" {
 			return format.URL, nil

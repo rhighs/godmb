@@ -10,9 +10,7 @@ import (
 	dgo "github.com/bwmarrin/discordgo"
 )
 
-var (
-	RemoveCommands bool = false
-)
+var RemoveCommands bool = false
 
 const (
 	PLAY_COMMAND_NAME   = "play"

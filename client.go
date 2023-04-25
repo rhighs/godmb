@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"ndmb/enc"
 
@@ -88,8 +89,13 @@ func (c *Client) PlayCommand(s *dgo.Session, i *dgo.InteractionCreate) {
 
 	voiceConnection, err := s.ChannelVoiceJoin(i.GuildID, voiceChannelId, false, true)
 	if err != nil {
-		InteractionTextUpdate(s, i, QUEUE_EMPTY_ERR)
-		return
+		if _, ok := s.VoiceConnections[i.GuildID]; ok {
+			voiceConnection = s.VoiceConnections[i.GuildID]
+		} else {
+			log.Println(err)
+			InteractionTextUpdate(s, i, QUEUE_EMPTY_ERR)
+			return
+		}
 	}
 
 	options := i.ApplicationCommandData().Options
