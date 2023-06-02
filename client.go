@@ -71,12 +71,25 @@ func NewClient(s *dgo.Session, guildIds []string) Client {
 }
 
 func (c *Client) PlayCommand(s *dgo.Session, i *dgo.InteractionCreate) {
-	InteractionRespondDeferred(s, i)
+	if err := InteractionRespondDeferred(s, i); err != nil {
+		log.Printf(
+			"Failed sending deferred response into guild: %s, error: %s",
+			i.GuildID,
+			err,
+		)
+	}
 
 	voiceChannelId := ""
 	g, err := s.State.Guild(i.GuildID)
 	if err != nil {
-		InteractionTextUpdate(s, i, "Couldn't find any guild with id: "+i.GuildID) // Unlikely to happen
+		err = InteractionTextUpdate(s, i, "Couldn't find any guild with id: "+i.GuildID) // Unlikely to happen
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				QUEUE_EMPTY_ERR,
+				err,
+			)
+		}
 		return
 	}
 
@@ -92,8 +105,14 @@ func (c *Client) PlayCommand(s *dgo.Session, i *dgo.InteractionCreate) {
 		if _, ok := s.VoiceConnections[i.GuildID]; ok {
 			voiceConnection = s.VoiceConnections[i.GuildID]
 		} else {
-			log.Println(err)
-			InteractionTextUpdate(s, i, QUEUE_EMPTY_ERR)
+			err := InteractionTextUpdate(s, i, QUEUE_EMPTY_ERR)
+			if err != nil {
+				log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+					i.GuildID,
+					QUEUE_EMPTY_ERR,
+					err,
+				)
+			}
 			return
 		}
 	}
@@ -107,7 +126,14 @@ func (c *Client) PlayCommand(s *dgo.Session, i *dgo.InteractionCreate) {
 	userInput := optionsMap["input"].Value.(string) // assume a string, because yes
 	track, err := ResolveAudioSource(userInput)
 	if err != nil {
-		InteractionTextUpdate(s, i, BAD_COMMAND_ARG_ERR)
+		err = InteractionTextUpdate(s, i, BAD_COMMAND_ARG_ERR)
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				BAD_COMMAND_ARG_ERR,
+				err,
+			)
+		}
 		return
 	}
 
@@ -115,13 +141,27 @@ func (c *Client) PlayCommand(s *dgo.Session, i *dgo.InteractionCreate) {
 	if p, ok := c.Players[i.GuildID]; ok {
 		playback = p
 	} else {
-		InteractionTextUpdate(s, i, NO_PLAYER_AVAILABLE_ERR)
+		err := InteractionTextUpdate(s, i, NO_PLAYER_AVAILABLE_ERR)
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				NO_PLAYER_AVAILABLE_ERR,
+				err,
+			)
+		}
 		return
 	}
 
 	if playback.Player.State == enc.PlayerStatePlaying || playback.Player.State == enc.PlayerStatePaused {
 		msg := fmt.Sprintf("Track %s | %s added to queue", track.Title, track.WebURL)
-		InteractionTextUpdate(s, i, msg)
+		err := InteractionTextUpdate(s, i, msg)
+		if err != nil {
+			log.Printf("Failed sending client message to guild %s, client_message: %s, error: %s",
+				i.GuildID,
+				msg,
+				err,
+			)
+		}
 		playback.Queue = append(playback.Queue, track)
 		return
 	}
@@ -131,7 +171,13 @@ func (c *Client) PlayCommand(s *dgo.Session, i *dgo.InteractionCreate) {
 	playback.Title = track.Title
 
 	msg := fmt.Sprintf("Now playing %s | %s", track.Title, track.WebURL)
-	InteractionTextUpdate(s, i, msg)
+	if err := InteractionTextUpdate(s, i, msg); err != nil {
+		log.Printf("Failed sending client message to guild %s, client_message: %s, error: %s",
+			i.GuildID,
+			msg,
+			err,
+		)
+	}
 
 	playback.voiceConnection = voiceConnection
 	PlayMediaInVoiceChannel(track.MediaURL, playback.Player,
@@ -142,23 +188,51 @@ func (c *Client) PlayCommand(s *dgo.Session, i *dgo.InteractionCreate) {
 }
 
 func (c *Client) NextCommand(s *dgo.Session, i *dgo.InteractionCreate) {
-	InteractionRespondDeferred(s, i)
+	if err := InteractionRespondDeferred(s, i); err != nil {
+		log.Printf(
+			"Failed sending deferred response into guild: %s, error: %s",
+			i.GuildID,
+			err,
+		)
+	}
 
 	var playback *Playback
 	if p, ok := c.Players[i.GuildID]; ok {
 		playback = p
 	} else {
-		InteractionTextUpdate(s, i, NO_PLAYER_AVAILABLE_ERR)
+		err := InteractionTextUpdate(s, i, NO_PLAYER_AVAILABLE_ERR)
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				NO_PLAYER_AVAILABLE_ERR,
+				err,
+			)
+
+		}
 		return
 	}
 
 	if playback.voiceConnection == nil {
-		InteractionTextUpdate(s, i, NO_VOICE_CONNECTION_ERR)
+		err := InteractionTextUpdate(s, i, NO_VOICE_CONNECTION_ERR)
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				NO_VOICE_CONNECTION_ERR,
+				err,
+			)
+		}
 		return
 	}
 
 	if playback.Player.State == enc.PlayerStateIdle || len(playback.Queue) == 0 {
-		InteractionTextUpdate(s, i, QUEUE_EMPTY_ERR)
+		err := InteractionTextUpdate(s, i, QUEUE_EMPTY_ERR)
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				QUEUE_EMPTY_ERR,
+				err,
+			)
+		}
 		return
 	}
 
@@ -170,7 +244,15 @@ func (c *Client) NextCommand(s *dgo.Session, i *dgo.InteractionCreate) {
 	playback.Title = track.Title
 
 	msg := fmt.Sprintf("Now playing %s | %s", track.Title, track.WebURL)
-	InteractionTextUpdate(s, i, msg)
+	err := InteractionTextUpdate(s, i, msg)
+	if err != nil {
+		log.Printf("Failed sending client message to guild %s, client_message: %s, error: %s",
+			i.GuildID,
+			msg,
+			err,
+		)
+	}
+
 	if playback.Player.State == enc.PlayerStatePlaying {
 		playback.CommandChannel <- enc.CommandStop{}
 	}
@@ -183,85 +265,193 @@ func (c *Client) NextCommand(s *dgo.Session, i *dgo.InteractionCreate) {
 }
 
 func (c *Client) StopCommand(s *dgo.Session, i *dgo.InteractionCreate) {
-	InteractionRespondDeferred(s, i)
+	if err := InteractionRespondDeferred(s, i); err != nil {
+		log.Printf(
+			"Failed sending deferred response into guild: %s, error: %s",
+			i.GuildID,
+			err,
+		)
+	}
 
 	var playback *Playback
 	if p, ok := c.Players[i.GuildID]; ok {
 		playback = p
 	} else {
-		InteractionTextUpdate(s, i, NO_PLAYER_AVAILABLE_ERR)
+		err := InteractionTextUpdate(s, i, NO_PLAYER_AVAILABLE_ERR)
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				NO_PLAYER_AVAILABLE_ERR,
+				err,
+			)
+		}
 		return
 	}
 
 	if playback.voiceConnection == nil {
-		InteractionTextUpdate(s, i, NO_VOICE_CONNECTION_ERR)
+		err := InteractionTextUpdate(s, i, NO_VOICE_CONNECTION_ERR)
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				NO_VOICE_CONNECTION_ERR,
+				err,
+			)
+		}
 		return
 	}
 
 	if playback.Player.State != enc.PlayerStatePlaying && playback.Player.State != enc.PlayerStatePaused {
-		InteractionTextUpdate(s, i, NO_TRACK_PLAYING_ERR)
+		err := InteractionTextUpdate(s, i, NO_TRACK_PLAYING_ERR)
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				NO_TRACK_PLAYING_ERR,
+				err,
+			)
+		}
 		return
 	}
 
 	playback.CommandChannel <- enc.CommandStop{}
 	msg := fmt.Sprintf("Track %s | %s has been stopped", playback.Title, playback.WebURL)
-	InteractionTextUpdate(s, i, msg)
+	err := InteractionTextUpdate(s, i, msg)
+	if err != nil {
+		log.Printf("Failed sending client message to guild %s, client_message: %s, error: %s",
+			i.GuildID,
+			msg,
+			err,
+		)
+	}
 }
 
 func (c *Client) PauseCommand(s *dgo.Session, i *dgo.InteractionCreate) {
-	InteractionRespondDeferred(s, i)
+	if err := InteractionRespondDeferred(s, i); err != nil {
+		log.Printf(
+			"Failed sending deferred response into guild: %s, error: %s",
+			i.GuildID,
+			err,
+		)
+	}
 
 	var playback *Playback
 	if p, ok := c.Players[i.GuildID]; ok {
 		playback = p
 	} else {
-		InteractionTextUpdate(s, i, NO_PLAYER_AVAILABLE_ERR)
+		err := InteractionTextUpdate(s, i, NO_PLAYER_AVAILABLE_ERR)
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				NO_PLAYER_AVAILABLE_ERR,
+				err,
+			)
+		}
 		return
 	}
 
 	if playback.voiceConnection == nil {
-		InteractionTextUpdate(s, i, NO_VOICE_CONNECTION_ERR)
+		err := InteractionTextUpdate(s, i, NO_VOICE_CONNECTION_ERR)
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				NO_VOICE_CONNECTION_ERR,
+				err,
+			)
+		}
 		return
 	}
 
 	if playback.Player.State != enc.PlayerStatePlaying && playback.Player.State != enc.PlayerStatePaused {
-		InteractionTextUpdate(s, i, NO_TRACK_PLAYING_ERR)
+		err := InteractionTextUpdate(s, i, NO_TRACK_PLAYING_ERR)
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				NO_TRACK_PLAYING_ERR,
+				err,
+			)
+		}
 		return
 	}
 
 	playback.CommandChannel <- enc.CommandPause{}
 	msg := fmt.Sprintf("Track %s | %s has been paused", playback.Title, playback.WebURL)
-	InteractionTextUpdate(s, i, msg)
+	err := InteractionTextUpdate(s, i, msg)
+	if err != nil {
+		log.Printf("Failed sending client message to guild %s, client_message: %s, error: %s",
+			i.GuildID,
+			msg,
+			err,
+		)
+	}
 }
 
 func (c *Client) ResumeCommand(s *dgo.Session, i *dgo.InteractionCreate) {
-	InteractionRespondDeferred(s, i)
+	if err := InteractionRespondDeferred(s, i); err != nil {
+		log.Printf(
+			"Failed sending deferred response into guild: %s, error: %s",
+			i.GuildID,
+			err,
+		)
+	}
 
 	var playback *Playback
 	if p, ok := c.Players[i.GuildID]; ok {
 		playback = p
 	} else {
-		InteractionTextUpdate(s, i, NO_PLAYER_AVAILABLE_ERR)
+		err := InteractionTextUpdate(s, i, NO_PLAYER_AVAILABLE_ERR)
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				NO_PLAYER_AVAILABLE_ERR,
+				err,
+			)
+		}
 		return
 	}
 
 	if playback.voiceConnection == nil {
-		InteractionTextUpdate(s, i, NO_VOICE_CONNECTION_ERR)
+		err := InteractionTextUpdate(s, i, NO_VOICE_CONNECTION_ERR)
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				NO_VOICE_CONNECTION_ERR,
+				err,
+			)
+		}
 		return
 	}
 
 	if playback.Player.State != enc.PlayerStatePlaying && playback.Player.State != enc.PlayerStatePaused {
-		InteractionTextUpdate(s, i, NO_TRACK_PLAYING_ERR)
+		err := InteractionTextUpdate(s, i, NO_TRACK_PLAYING_ERR)
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				NO_TRACK_PLAYING_ERR,
+				err,
+			)
+		}
 		return
 	}
 
 	playback.CommandChannel <- enc.CommandResume{}
 	msg := fmt.Sprintf("Track %s | %s has been resumed", playback.Title, playback.WebURL)
-	InteractionTextUpdate(s, i, msg)
+	err := InteractionTextUpdate(s, i, msg)
+	if err != nil {
+		log.Printf("Failed sending client message to guild %s, client_message: %s, error: %s",
+			i.GuildID,
+			msg,
+			err,
+		)
+	}
 }
 
 func (c *Client) SeekCommand(s *dgo.Session, i *dgo.InteractionCreate) {
-	InteractionRespondDeferred(s, i)
+	if err := InteractionRespondDeferred(s, i); err != nil {
+		log.Printf(
+			"Failed sending deferred response into guild: %s, error: %s",
+			i.GuildID,
+			err,
+		)
+	}
 
 	options := i.ApplicationCommandData().Options
 	optionsMap := make(map[string]*dgo.ApplicationCommandInteractionDataOption, len(options))
@@ -274,17 +464,38 @@ func (c *Client) SeekCommand(s *dgo.Session, i *dgo.InteractionCreate) {
 	if p, ok := c.Players[i.GuildID]; ok {
 		playback = p
 	} else {
-		InteractionTextUpdate(s, i, NO_PLAYER_AVAILABLE_ERR)
+		err := InteractionTextUpdate(s, i, NO_PLAYER_AVAILABLE_ERR)
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				NO_PLAYER_AVAILABLE_ERR,
+				err,
+			)
+		}
 		return
 	}
 
 	if playback.voiceConnection == nil {
-		InteractionTextUpdate(s, i, NO_VOICE_CONNECTION_ERR)
+		err := InteractionTextUpdate(s, i, NO_VOICE_CONNECTION_ERR)
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				NO_VOICE_CONNECTION_ERR,
+				err,
+			)
+		}
 		return
 	}
 
 	if playback.Player.State != enc.PlayerStatePlaying && playback.Player.State != enc.PlayerStatePaused {
-		InteractionTextUpdate(s, i, NO_TRACK_PLAYING_ERR)
+		err := InteractionTextUpdate(s, i, NO_TRACK_PLAYING_ERR)
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				NO_TRACK_PLAYING_ERR,
+				err,
+			)
+		}
 		return
 	}
 
@@ -297,7 +508,14 @@ func (c *Client) SeekCommand(s *dgo.Session, i *dgo.InteractionCreate) {
 
 	cursor := currentTime + userInput
 	if cursor > duration {
-		InteractionTextUpdate(s, i, SEEK_TOO_FAR_ERR)
+		err := InteractionTextUpdate(s, i, SEEK_TOO_FAR_ERR)
+		if err != nil {
+			log.Printf("Failed sending client error message to guild %s, client_error: %s, error: %s",
+				i.GuildID,
+				SEEK_TOO_FAR_ERR,
+				err,
+			)
+		}
 		return
 	}
 
@@ -305,5 +523,13 @@ func (c *Client) SeekCommand(s *dgo.Session, i *dgo.InteractionCreate) {
 	seconds := cursor - (minutes * 60)
 
 	playback.CommandChannel <- enc.CommandSeek(cursor)
-	InteractionTextUpdate(s, i, fmt.Sprintf("Skipping track at %d:%d", minutes, seconds))
+	msg := fmt.Sprintf("Skipping track at %d:%d", minutes, seconds)
+	err := InteractionTextUpdate(s, i, msg)
+	if err != nil {
+		log.Printf("Failed sending client message to guild %s, client_message: %s, error: %s",
+			i.GuildID,
+			msg,
+			err,
+		)
+	}
 }
