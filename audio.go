@@ -65,17 +65,17 @@ func ResolveAudioSource(input string) (Track, error) {
 
 	webUrl = results[0].URL
 
-    mediaUrl, err := YoutubeMediaUrl(webUrl)
+	mediaUrl, err := YoutubeMediaUrl(webUrl)
 	if err != nil {
-        return track, err
-    }
+		return track, err
+	}
 
 	track.MediaURL = mediaUrl
 	track.WebURL = webUrl
 	track.Title, err = GetYTVideoTitle(webUrl)
 	if err != nil {
-        return track, err
-    }
+		return track, err
+	}
 
 	return track, nil
 }

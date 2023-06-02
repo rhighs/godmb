@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 
 	dgo "github.com/bwmarrin/discordgo"
 )
@@ -81,23 +82,50 @@ func main() {
 		userHome+"/.local/bin/yt-dlp",
 		"Path to ffmpeg executable",
 	)
-	configPath := flags.String(
-		"config",
-		"./config/bot-data.json",
-		"Bot config file",
+	token := flags.String(
+		"token",
+		"",
+		"Discord bot token",
+	)
+	guildsStr := flags.String(
+		"guilds",
+		"",
+		"A list of guild id for every discord server the bot will operate (comma separated)",
 	)
 	flags.Parse(os.Args[1:])
+
+	if *token == "" {
+		fmt.Println("Failed parsing bot token\n")
+		flags.Parse([]string{"-h"})
+		os.Exit(1)
+	}
+
+	if *guildsStr == "" {
+		fmt.Println("Failed parsing guilds\n")
+		flags.Parse([]string{"-h"})
+		os.Exit(1)
+	}
+
+	guilds := strings.Split(
+		strings.ReplaceAll(*guildsStr, " ", ""),
+		",",
+	)
+
+	if len(guilds) == 0 {
+		fmt.Println("Failed parsing guilds\n")
+		flags.Parse([]string{"-h"})
+		os.Exit(1)
+	}
 
 	SetFfmpegPath(*ffmpegPath)
 	SetYtdlpPath(*ytdlpPath)
 
-	botData := LoadConfig(*configPath)
-	s, err := dgo.New("Bot " + botData.Token)
+	s, err := dgo.New("Bot " + *token)
 	if err != nil {
 		panic(err)
 	}
 
-	client := NewClient(s, botData.GuildIds)
+	client := NewClient(s, guilds)
 
 	s.AddHandler(func(s *dgo.Session, r *dgo.Ready) {
 		username := s.State.User.Username + "#" + s.State.User.Discriminator
@@ -130,7 +158,7 @@ func main() {
 		log.Fatalf("Cannot open the session: %v", err)
 	}
 
-	for _, guildId := range botData.GuildIds {
+	for _, guildId := range guilds {
 		log.Println("Adding commands for guildId:", guildId)
 		registeredCommands := make([]*dgo.ApplicationCommand, len(commands))
 		for i, v := range commands {
@@ -149,6 +177,4 @@ func main() {
 	signal.Notify(stop, os.Interrupt)
 	log.Printf("Press Ctrl+C to exit")
 	<-stop
-
-	fmt.Println(botData.Token)
 }

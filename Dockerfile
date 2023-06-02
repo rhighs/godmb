@@ -17,7 +17,6 @@ COPY go.sum ./
 RUN go mod download
 
 COPY *.go ./
-COPY config/ ./config
 COPY enc/ ./enc
 
 RUN go build -o /ndmb
