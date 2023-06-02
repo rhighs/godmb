@@ -8,7 +8,7 @@ all:
 .PHONY: fmt lint docker-build docker-run
 
 fmt:
-	@ gofmt --version || gofmt -w -s  .
+	@ which gofmt &>/dev/null || gofmt -w -s  .
 
 lint:
 	@ golangci-lint --version || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest \
