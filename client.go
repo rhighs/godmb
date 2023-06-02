@@ -533,3 +533,15 @@ func (c *Client) SeekCommand(s *dgo.Session, i *dgo.InteractionCreate) {
 		)
 	}
 }
+
+func (c *Client) AliveCommand(s *dgo.Session, i *dgo.InteractionCreate) {
+	msg := "I'm alive :)"
+	err := InteractionTextRespond(s, i, msg)
+	if err != nil {
+		log.Printf("Failed sending client message to guild %s, client_message: %s, error: %s",
+			i.GuildID,
+			msg,
+			err,
+		)
+	}
+}

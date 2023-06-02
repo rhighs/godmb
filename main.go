@@ -14,6 +14,7 @@ import (
 var RemoveCommands bool = false
 
 const (
+	ALIVE_COMMAND_NAME  = "alive"
 	PLAY_COMMAND_NAME   = "play"
 	NEXT_COMMAND_NAME   = "next"
 	STOP_COMMAND_NAME   = "stop"
@@ -62,6 +63,10 @@ var commands = []*dgo.ApplicationCommand{
 	{
 		Name:        RESUME_COMMAND_NAME,
 		Description: "Pauses a playing song",
+	},
+	{
+		Name:        ALIVE_COMMAND_NAME,
+		Description: "Am I alive? o.O",
 	},
 }
 
@@ -144,6 +149,8 @@ func main() {
 		commandName := i.ApplicationCommandData().Name
 		log.Printf("User %s from channel %s invoked command: %s\n", i.Member.User.Username, i.GuildID, commandName)
 		switch commandName {
+		case ALIVE_COMMAND_NAME:
+			client.AliveCommand(s, i)
 		case PLAY_COMMAND_NAME:
 			client.PlayCommand(s, i)
 		case NEXT_COMMAND_NAME:
