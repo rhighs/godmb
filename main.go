@@ -92,17 +92,23 @@ func main() {
 		"",
 		"A list of guild id for every discord server the bot will operate (comma separated)",
 	)
-	flags.Parse(os.Args[1:])
+	if err := flags.Parse(os.Args[1:]); err != nil {
+		log.Fatal(err)
+	}
 
 	if *token == "" {
-		fmt.Println("Failed parsing bot token\n")
-		flags.Parse([]string{"-h"})
+		fmt.Printf("Failed parsing bot token\n\n")
+		if err := flags.Parse([]string{"-h"}); err != nil {
+			log.Fatal(err)
+		}
 		os.Exit(1)
 	}
 
 	if *guildsStr == "" {
-		fmt.Println("Failed parsing guilds\n")
-		flags.Parse([]string{"-h"})
+		fmt.Printf("Failed parsing bot token\n\n")
+		if err := flags.Parse([]string{"-h"}); err != nil {
+			log.Fatal(err)
+		}
 		os.Exit(1)
 	}
 
@@ -112,8 +118,10 @@ func main() {
 	)
 
 	if len(guilds) == 0 {
-		fmt.Println("Failed parsing guilds\n")
-		flags.Parse([]string{"-h"})
+		fmt.Printf("Failed parsing bot guilds\n\n")
+		if err := flags.Parse([]string{"-h"}); err != nil {
+			log.Fatal(err)
+		}
 		os.Exit(1)
 	}
 

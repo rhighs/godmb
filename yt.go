@@ -75,6 +75,7 @@ func IsYoutubeUrl(url string) bool {
 
 func GetYTVideoTitle(URL string) (string, error) {
 	resp, _ := http.Get(URL)
+	defer resp.Body.Close()
 	bodyBytes, _ := io.ReadAll(resp.Body)
 	matched := videoTitleRegexp.FindAllStringSubmatch(string(bodyBytes), 1)
 	if len(matched[0]) == 0 {

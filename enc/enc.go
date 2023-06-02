@@ -11,6 +11,7 @@ made possible by the use of goroutines, therefore you'll see the encoder bufferi
 
 import (
 	"encoding/binary"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -138,7 +139,9 @@ func (e *Enc) GetOpusFrames(input string, opts EncOptions, ch chan<- []byte, err
 		for {
 			select {
 			case <-encoderStop:
-				cmd.Process.Signal(os.Interrupt)
+				if err := cmd.Process.Signal(os.Interrupt); err != nil {
+					fmt.Println("[ENCOEER_ERR]: Failed sending interrupt for encoder to stop")
+				}
 				pcm.Close()
 				killedFfmpeg = true
 				break encoderLoop
@@ -236,12 +239,11 @@ loop:
 			case CommandGetPlaybackTime:
 				respCh <- ResponsePlaybackTime(float32(nof / int(framesPerSecond)))
 			case CommandGetDuration:
-				//if encoderRunning {
-				//	respCh <- ResponseDurationUnknown{}
-				//} else {
-				//	respCh <- ResponseDuration(float32(len(opusFrames)) / framesPerSecond)
-				//}
-				respCh <- ResponseDuration(float32(len(opusFrames)) / framesPerSecond)
+				if encoderRunning {
+					respCh <- ResponseDurationUnknown{}
+				} else {
+					respCh <- ResponseDuration(float32(len(opusFrames)) / framesPerSecond)
+				}
 			}
 		default:
 			time.Sleep(2 * time.Millisecond)
@@ -273,7 +275,6 @@ loop:
 	// Wait for the encoder to finish if it's still running.
 	if encoderRunning {
 		<-encoderDone
-		encoderRunning = false
 		// TODO: I want to make this unnecessary. I have just noticed that
 		// this channel often get stuck so a panic is more helpful than that.
 		close(respCh)

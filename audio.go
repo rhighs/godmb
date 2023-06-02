@@ -58,7 +58,7 @@ func ResolveAudioSource(input string) (Track, error) {
 	}
 
 	for _, r := range searchResults {
-		if r.Live == false {
+		if !r.Live {
 			results = append(results, r)
 		}
 	}
