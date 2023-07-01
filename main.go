@@ -148,6 +148,10 @@ func main() {
 	s.AddHandler(func(s *dgo.Session, i *dgo.InteractionCreate) {
 		commandName := i.ApplicationCommandData().Name
 		log.Printf("User %s from channel %s invoked command: %s\n", i.Member.User.Username, i.GuildID, commandName)
+
+		// Update last active channel for this guild
+		client.ActiveChannels[i.GuildID] = i.Message.ChannelID
+
 		switch commandName {
 		case ALIVE_COMMAND_NAME:
 			client.AliveCommand(s, i)
@@ -186,10 +190,13 @@ func main() {
 		}
 	}
 
+	timerStop := client.StartDisconnectionTimmer(s, 10)
+
 	defer s.Close()
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 	log.Printf("Press Ctrl+C to exit")
 	<-stop
+	timerStop <- struct{}{}
 }

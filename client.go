@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"ndmb/enc"
 
@@ -26,8 +27,8 @@ type Playback struct {
 }
 
 type Client struct {
-	Session *dgo.Session
-	Players map[string]*Playback
+	Players        map[string]*Playback
+	ActiveChannels map[string]string
 }
 
 const (
@@ -38,12 +39,14 @@ const (
 	JOIN_CHANNEL_ERR        = "Some error occurred while trying to join channel, try again"
 	BAD_COMMAND_ARG_ERR     = "Make sure to provide a valid command argument"
 	SEEK_TOO_FAR_ERR        = "You went too far (the encoder might still be buffering)"
+	VOICE_IDLE_ERR          = "Failed disconnecting from idle channel connection"
+	MAX_IDLE_SECONDS        = 300
 )
 
 func NewClient(s *dgo.Session, guildIds []string) Client {
 	c := Client{
-		Players: make(map[string]*Playback),
-		Session: s,
+		Players:        make(map[string]*Playback),
+		ActiveChannels: make(map[string]string, len(guildIds)),
 	}
 
 	for _, gId := range guildIds {
@@ -68,6 +71,58 @@ func NewClient(s *dgo.Session, guildIds []string) Client {
 	}
 
 	return c
+}
+
+func (c *Client) StartDisconnectionTimmer(s *dgo.Session, tickEvery int) chan struct{} {
+	stop := make(chan struct{})
+
+	go func() {
+		tickDuration := time.Duration(int64(time.Second) * int64(tickEvery))
+		timers := make(map[string]int, len(c.Players))
+		for guild := range c.Players {
+			timers[guild] = 0
+		}
+
+		for {
+			time.Sleep(tickDuration)
+
+			select {
+			case <-stop:
+				for guild := range c.Players {
+					if err := s.VoiceConnections[guild].Disconnect(); err != nil {
+						log.Println("[VOICE_IDLE_ERR]:", VOICE_IDLE_ERR)
+						continue
+					}
+				}
+				return
+			default:
+			}
+
+			for guild, player := range c.Players {
+				if player.Player.State == enc.PlayerStateIdle {
+					timers[guild] += tickEvery
+				}
+
+				if timers[guild] >= MAX_IDLE_SECONDS && s.VoiceConnections[guild] != nil {
+					if err := s.VoiceConnections[guild].Disconnect(); err != nil {
+						log.Println("[VOICE_IDLE_ERR]:", VOICE_IDLE_ERR)
+
+						// do not reset timer, try again later
+						continue
+					}
+
+					channelId := c.ActiveChannels[guild]
+					_, err := s.ChannelMessageSend(channelId, "@here leaving channel as I've been idle for more than 5 minutes...")
+					if err != nil {
+						log.Printf("Failed sending disconnection message to channel %s with guildId %s\n", channelId, guild)
+					}
+					timers[guild] = 0
+				}
+			}
+		}
+	}()
+
+	return stop
 }
 
 func (c *Client) PlayCommand(s *dgo.Session, i *dgo.InteractionCreate) {
