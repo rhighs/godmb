@@ -239,11 +239,7 @@ loop:
 			case CommandGetPlaybackTime:
 				respCh <- ResponsePlaybackTime(float32(nof / int(framesPerSecond)))
 			case CommandGetDuration:
-				if encoderRunning {
-					respCh <- ResponseDurationUnknown{}
-				} else {
-					respCh <- ResponseDuration(float32(len(opusFrames)) / framesPerSecond)
-				}
+			    respCh <- ResponseDuration(float32(len(opusFrames)) / framesPerSecond)
 			}
 		default:
 			time.Sleep(2 * time.Millisecond)

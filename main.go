@@ -110,7 +110,7 @@ func main() {
 	}
 
 	if *guildsStr == "" {
-		fmt.Printf("Failed parsing bot token\n\n")
+		fmt.Printf("Failed parsing bot guilds\n\n")
 		if err := flags.Parse([]string{"-h"}); err != nil {
 			log.Fatal(err)
 		}
