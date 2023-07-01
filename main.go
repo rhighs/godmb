@@ -150,7 +150,7 @@ func main() {
 		log.Printf("User %s from channel %s invoked command: %s\n", i.Member.User.Username, i.GuildID, commandName)
 
 		// Update last active channel for this guild
-		client.ActiveChannels[i.GuildID] = i.Message.ChannelID
+		client.ActiveChannels[i.GuildID] = i.ChannelID
 
 		switch commandName {
 		case ALIVE_COMMAND_NAME:

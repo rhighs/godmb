@@ -50,6 +50,8 @@ func NewClient(s *dgo.Session, guildIds []string) Client {
 	}
 
 	for _, gId := range guildIds {
+		c.ActiveChannels[gId] = ""
+
 		p := &Playback{
 			CommandChannel:  make(chan enc.Command),
 			ResponseChannel: make(chan enc.Response),
