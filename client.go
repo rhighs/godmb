@@ -101,11 +101,15 @@ func (c *Client) StartDisconnectionTimmer(s *dgo.Session, tickEvery int) chan st
 			}
 
 			for guild, player := range c.Players {
+				if s.VoiceConnections[guild] == nil {
+					continue
+				}
+
 				if player.Player.State == enc.PlayerStateIdle {
 					timers[guild] += tickEvery
 				}
 
-				if timers[guild] >= MAX_IDLE_SECONDS && s.VoiceConnections[guild] != nil {
+				if timers[guild] >= MAX_IDLE_SECONDS {
 					if err := s.VoiceConnections[guild].Disconnect(); err != nil {
 						log.Println("[VOICE_IDLE_ERR]:", VOICE_IDLE_ERR)
 
