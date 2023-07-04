@@ -75,6 +75,36 @@ func NewClient(s *dgo.Session, guildIds []string) Client {
 	return c
 }
 
+// Logs to stdout the state of each player by guild id
+func (c *Client) ClientStateLogger(logInterval int) chan struct{} {
+    stop := make(chan struct{})
+
+    go func() {
+        for {
+            select {
+            case <- stop:
+                return
+            default:
+            }
+
+            for k := range c.ActiveChannels {
+                for _, player := range c.Players {
+                    guildId := player.voiceConnection.GuildID
+                    if guildId != k {
+                        continue
+                    }
+
+                    playerState := player.Player.State.String()
+                    log.Printf("[PLAYER_CONN_STATE]: (%s) state -> %s\n", guildId, playerState)
+                }
+            }
+            time.Sleep(time.Duration(int(time.Second) * logInterval))
+        }
+    }()
+
+    return stop
+}
+
 func (c *Client) StartDisconnectionTimmer(s *dgo.Session, tickEvery int) chan struct{} {
 	stop := make(chan struct{})
 

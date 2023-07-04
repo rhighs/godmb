@@ -97,6 +97,11 @@ func main() {
 		"",
 		"A list of guild id for every discord server the bot will operate (comma separated)",
 	)
+    logStatePtr := flags.Int(
+        "log-state",
+        0,
+        "Log each player playing state by guild id",
+    )
 	if err := flags.Parse(os.Args[1:]); err != nil {
 		log.Fatal(err)
 	}
@@ -190,13 +195,27 @@ func main() {
 		}
 	}
 
-	timerStop := client.StartDisconnectionTimmer(s, 10)
-
 	defer s.Close()
 
+    stoppingChannels := make([]chan struct{}, 0)
+
+	timerStop := client.StartDisconnectionTimmer(s, 10)
+    stoppingChannels = append(stoppingChannels, timerStop)
+
+    if *logStatePtr != 0 {
+        loggerStop := client.ClientStateLogger(*logStatePtr)
+        stoppingChannels = append(stoppingChannels, loggerStop)
+    }
+
+    defer func() {
+        for _, stoppingChannel := range stoppingChannels {
+            stoppingChannel <- struct{}{}
+        }
+    }()
+
+    // Entire program stops
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 	log.Printf("Press Ctrl+C to exit")
 	<-stop
-	timerStop <- struct{}{}
 }

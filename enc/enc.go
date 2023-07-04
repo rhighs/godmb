@@ -55,6 +55,21 @@ type CacheOverflowError struct {
 	MaxCacheBytes int
 }
 
+func (ps PlayerState) String() string {
+    switch ps {
+    case PlayerStatePlaying:
+        return "PlayerStatePlaying"
+    case PlayerStateStopped:
+        return "PlayerStateStopped"
+    case PlayerStatePaused:
+        return "PlayerEventPaused"
+    case PlayerStateIdle:
+        return "PlayerStateIdle"
+    }
+
+    panic("unreachable!")
+}
+
 func (e *CacheOverflowError) Error() string {
 	return "audio too large: the maximum cache limit of " + strconv.Itoa(e.MaxCacheBytes) + " bytes has been exceeded"
 }
