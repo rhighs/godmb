@@ -102,6 +102,11 @@ func main() {
         0,
         "Log each player playing state by guild id",
     )
+    logPlaybackEventsPtr := flags.Int(
+        "log-player-err",
+        0,
+        "Log each player error events",
+    )
 	if err := flags.Parse(os.Args[1:]); err != nil {
 		log.Fatal(err)
 	}
@@ -203,7 +208,27 @@ func main() {
     stoppingChannels = append(stoppingChannels, timerStop)
 
     if *logStatePtr != 0 {
-        loggerStop := client.ClientStateLogger(*logStatePtr)
+        loggerStop := client.ClientLogger(func() string {
+            out := ""
+            for guildId := range client.ActiveChannels {
+                for _, player := range client.Players {
+                    if player.voiceConnection.GuildID == guildId {
+                        playerState := player.Player.State.String()
+                        out = fmt.Sprintf(
+                            "player state %s at guildId %s",
+                            playerState,
+                            guildId,
+                        )
+                    }
+                }
+            }
+            return out
+        }, *logStatePtr)
+        stoppingChannels = append(stoppingChannels, loggerStop)
+    }
+
+    if *logPlaybackEventsPtr != 0 {
+        loggerStop := client.ClientPlaybacksLogger(*logPlaybackEventsPtr)
         stoppingChannels = append(stoppingChannels, loggerStop)
     }
 

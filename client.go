@@ -75,8 +75,39 @@ func NewClient(s *dgo.Session, guildIds []string) Client {
 	return c
 }
 
+func (c *Client) ClientPlaybacksLogger(logInterval int) chan struct{} {
+    stop := make(chan struct{})
+
+    go func() {
+        for {
+            select {
+            case <-stop:
+                return
+            default:
+            }
+
+            for _, player := range c.Players {
+                if player.voiceConnection == nil {
+                    continue
+                }
+
+                guildId := player.voiceConnection.GuildID
+                select {
+                case err := <- player.ErrorChannel:
+                    log.Printf("[PLAYER_ERR]: %v at guildId: %s\n", err, guildId)
+                default:
+                }
+            }
+
+            time.Sleep(time.Duration(int(time.Second) * logInterval))
+        }
+    }()
+    
+    return stop
+}
+
 // Logs to stdout the state of each player by guild id
-func (c *Client) ClientStateLogger(logInterval int) chan struct{} {
+func (c *Client) ClientLogger(each func() string, logInterval int) chan struct{} {
     stop := make(chan struct{})
 
     go func() {
@@ -87,16 +118,9 @@ func (c *Client) ClientStateLogger(logInterval int) chan struct{} {
             default:
             }
 
-            for k := range c.ActiveChannels {
-                for _, player := range c.Players {
-                    guildId := player.voiceConnection.GuildID
-                    if guildId != k {
-                        continue
-                    }
-
-                    playerState := player.Player.State.String()
-                    log.Printf("[PLAYER_CONN_STATE]: (%s) state -> %s\n", guildId, playerState)
-                }
+            logValue := each()
+            if logValue != "" {
+                log.Println("[CLIENT_LOGGER]:", logValue)
             }
             time.Sleep(time.Duration(int(time.Second) * logInterval))
         }
