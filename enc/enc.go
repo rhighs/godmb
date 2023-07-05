@@ -1,14 +1,5 @@
 package enc
 
-/*
-Most of the credit for this opus buffering stuff here goes to the guy who made this publicly available:
-https://github.com/xypwn/go-musicbot/blob/master/dca0/dca0.go
-
-The encoder is fairly simple and supports a variety of commands. Everything involving PCM is intended as processes for receiving data,
-this data comes from ffpmeg which is then fed to `gopus` for encoding. In between, there is a buffering mechanism
-made possible by the use of goroutines, therefore you'll see the encoder buffering onto a `frameCh` channel.
-*/
-
 import (
 	"encoding/binary"
 	"fmt"
@@ -56,18 +47,18 @@ type CacheOverflowError struct {
 }
 
 func (ps PlayerState) String() string {
-    switch ps {
-    case PlayerStatePlaying:
-        return "PlayerStatePlaying"
-    case PlayerStateStopped:
-        return "PlayerStateStopped"
-    case PlayerStatePaused:
-        return "PlayerEventPaused"
-    case PlayerStateIdle:
-        return "PlayerStateIdle"
-    }
+	switch ps {
+	case PlayerStatePlaying:
+		return "PlayerStatePlaying"
+	case PlayerStateStopped:
+		return "PlayerStateStopped"
+	case PlayerStatePaused:
+		return "PlayerEventPaused"
+	case PlayerStateIdle:
+		return "PlayerStateIdle"
+	}
 
-    panic("unreachable!")
+	panic("unreachable!")
 }
 
 func (e *CacheOverflowError) Error() string {
@@ -147,6 +138,12 @@ func (e *Enc) GetOpusFrames(input string, opts EncOptions, ch chan<- []byte, err
 
 	encoderDone := make(chan struct{})
 	encoderStop := make(chan struct{})
+	encoderResume := make(chan struct{})
+	encoderPause := make(chan struct{})
+
+	encoderRunning := true
+	paused := false
+	loop := false
 
 	go func() {
 		killedFfmpeg := false
@@ -160,15 +157,16 @@ func (e *Enc) GetOpusFrames(input string, opts EncOptions, ch chan<- []byte, err
 				pcm.Close()
 				killedFfmpeg = true
 				break encoderLoop
+			case <-encoderPause:
+				<-encoderResume
 			default:
 			}
 
 			_, err := io.ReadFull(pcm, sampleBytes)
 			if err != nil {
+				errCh <- err
 				if err == io.EOF || err == io.ErrUnexpectedEOF {
 					break
-				} else {
-					errCh <- err
 				}
 			}
 
@@ -214,10 +212,6 @@ func (e *Enc) GetOpusFrames(input string, opts EncOptions, ch chan<- []byte, err
 		encoderDone <- struct{}{}
 	}()
 
-	encoderRunning := true
-	paused := false
-	loop := false
-
 	e.State = PlayerStatePlaying
 
 loop:
@@ -239,10 +233,12 @@ loop:
 			case CommandPause:
 				paused = true
 				e.State = PlayerStatePaused
+				encoderPause <- struct{}{}
 				e.Notify(PlayerEventPaused)
 			case CommandResume:
 				paused = false
 				e.State = PlayerStatePlaying
+				encoderResume <- struct{}{}
 				e.Notify(PlayerEventResumed)
 			case CommandStartLooping:
 				e.State = PlayerStatePlaying
@@ -254,7 +250,7 @@ loop:
 			case CommandGetPlaybackTime:
 				respCh <- ResponsePlaybackTime(float32(nof / int(framesPerSecond)))
 			case CommandGetDuration:
-			    respCh <- ResponseDuration(float32(len(opusFrames)) / framesPerSecond)
+				respCh <- ResponseDuration(float32(len(opusFrames)) / framesPerSecond)
 			}
 		default:
 			time.Sleep(2 * time.Millisecond)
@@ -264,11 +260,13 @@ loop:
 			if encoderRunning {
 				select {
 				case ch <- opusFrames[nof]:
+					cacheSize -= len(opusFrames[nof])
 					nof++
 				default:
 				}
 			} else {
 				ch <- opusFrames[nof]
+				cacheSize -= len(opusFrames[nof])
 				nof++
 			}
 		}
@@ -280,6 +278,13 @@ loop:
 				// We're done sending opus data.
 				break
 			}
+		}
+
+		// Cut the cache if we're going too far with the memory
+		if len(opusFrames) >= opts.MaxCacheBytes {
+			opusFrames = opusFrames[nof:]
+			nof = 0
+			cacheSize = len(opusFrames)
 		}
 	}
 
