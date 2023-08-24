@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"time"
 
 	dgo "github.com/bwmarrin/discordgo"
 )
@@ -231,6 +232,20 @@ func main() {
         loggerStop := client.ClientPlaybacksLogger(*logPlaybackEventsPtr)
         stoppingChannels = append(stoppingChannels, loggerStop)
     }
+
+    // Start update watcher process
+    go func() {
+        stopUpdateWatcher := make(chan struct{})
+        stoppingChannels = append(stoppingChannels, stopUpdateWatcher)
+        for {
+            select {
+            case <-stopUpdateWatcher:
+                break;
+            default:
+            }
+            time.Sleep(1 * time.Minute)
+        }
+    }()
 
     defer func() {
         for _, stoppingChannel := range stoppingChannels {
