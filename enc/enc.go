@@ -147,18 +147,19 @@ func (e *Enc) GetOpusFrames(input string, opts EncOptions, ch chan<- []byte, err
 
 	go func() {
 		killedFfmpeg := false
+
 	encoderLoop:
 		for {
 			select {
 			case <-encoderStop:
 				if err := cmd.Process.Signal(os.Interrupt); err != nil {
-					fmt.Println("[ENCOEER_ERR]: Failed sending interrupt for encoder to stop")
+					fmt.Println("[ENCODER_ERR]: Failed sending interrupt for encoder to stop")
 				}
 				pcm.Close()
 				killedFfmpeg = true
 				break encoderLoop
 			case <-encoderPause:
-				<-encoderResume
+				<-encoderResume // Wait for a resume signal
 			default:
 			}
 
@@ -175,8 +176,8 @@ func (e *Enc) GetOpusFrames(input string, opts EncOptions, ch chan<- []byte, err
 				samples[i] = int16(binary.LittleEndian.Uint16(sampleBytes[2*i:]))
 			}
 
-			// Encode to opus, prepare sending (or other stuff)
-			frame, err := e.encoder.Encode(samples, opts.FrameSize, maxBytes)
+			// Encode to opus
+            frame, err := e.encoder.Encode(samples, opts.FrameSize, maxBytes)
 			if err != nil {
 				errCh <- err
 			}
@@ -188,15 +189,14 @@ func (e *Enc) GetOpusFrames(input string, opts EncOptions, ch chan<- []byte, err
 				break
 			}
 
-			cacheSize += len(frame)
+            // Send frame to consumer
 			frameCh <- frame
 		}
 
 		// Wait for ffmpeg to close.
 		err = cmd.Wait()
 		if err != nil {
-			// Ffmpeg returns 255 if it was killed using SIGINT. Therefore that
-			// wouldn't be an error.
+			// Ffmpeg returns 255 if it was killed using SIGINT.
 			switch e := err.(type) {
 			case *exec.ExitError:
 				if e.ExitCode() == 255 {
@@ -208,6 +208,7 @@ func (e *Enc) GetOpusFrames(input string, opts EncOptions, ch chan<- []byte, err
 				errCh <- err
 			}
 		}
+
 		// Tell the main process that the encoder is done.
 		encoderDone <- struct{}{}
 	}()
@@ -256,18 +257,13 @@ loop:
 			time.Sleep(2 * time.Millisecond)
 		}
 
+        // Audio is playing, send it to caller channel
 		if !paused && nof < len(opusFrames) {
-			if encoderRunning {
-				select {
-				case ch <- opusFrames[nof]:
-					cacheSize -= len(opusFrames[nof])
-					nof++
-				default:
-				}
-			} else {
-				ch <- opusFrames[nof]
+			select {
+			case ch <- opusFrames[nof]:
 				cacheSize -= len(opusFrames[nof])
 				nof++
+			default:
 			}
 		}
 
@@ -291,8 +287,6 @@ loop:
 	// Wait for the encoder to finish if it's still running.
 	if encoderRunning {
 		<-encoderDone
-		// TODO: I want to make this unnecessary. I have just noticed that
-		// this channel often get stuck so a panic is more helpful than that.
 		close(respCh)
 	}
 
