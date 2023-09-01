@@ -182,12 +182,14 @@ func (e *Enc) GetOpusFrames(input string, opts EncOptions, ch chan<- []byte, err
 				errCh <- err
 			}
 
-			if cacheSize > opts.MaxCacheBytes {
-				errCh <- &CacheOverflowError{
-					MaxCacheBytes: opts.MaxCacheBytes,
-				}
-				break
+			/* Do not check cache state
+            if cacheSize > opts.MaxCacheBytes {
+			 	errCh <- &CacheOverflowError{
+			 		MaxCacheBytes: opts.MaxCacheBytes,
+			 	}
+			 	break
 			}
+            */ 
 
             // Send frame to consumer
 			frameCh <- frame
@@ -215,6 +217,7 @@ func (e *Enc) GetOpusFrames(input string, opts EncOptions, ch chan<- []byte, err
 
 	e.State = PlayerStatePlaying
 
+    encoderInHold := false
 loop:
 	for {
 		select {
@@ -278,10 +281,20 @@ loop:
 
 		// Cut the cache if we're going too far with the memory
 		if len(opusFrames) >= opts.MaxCacheBytes {
+            // Pause the encoder, lets consume some data
+            encoderPause <- struct{}{}
+            encoderInHold = true
+
 			opusFrames = opusFrames[nof:]
 			nof = 0
 			cacheSize = len(opusFrames)
 		}
+
+        // Enough data has been consumed, collect more
+        if encoderInHold && len(opusFrames) <= opts.MaxCacheBytes {
+            encoderResume <- struct{}{}
+            encoderInHold = false
+        }
 	}
 
 	// Wait for the encoder to finish if it's still running.
