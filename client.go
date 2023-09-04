@@ -76,57 +76,57 @@ func NewClient(s *dgo.Session, guildIds []string) Client {
 }
 
 func (c *Client) ClientPlaybacksLogger(logInterval int) chan struct{} {
-    stop := make(chan struct{})
+	stop := make(chan struct{})
 
-    go func() {
-        for {
-            select {
-            case <-stop:
-                return
-            default:
-            }
+	go func() {
+		for {
+			select {
+			case <-stop:
+				return
+			default:
+			}
 
-            for _, player := range c.Players {
-                if player.voiceConnection == nil {
-                    continue
-                }
+			for _, player := range c.Players {
+				if player.voiceConnection == nil {
+					continue
+				}
 
-                guildId := player.voiceConnection.GuildID
-                select {
-                case err := <- player.ErrorChannel:
-                    log.Printf("[PLAYER_ERR]: %v at guildId: %s\n", err, guildId)
-                default:
-                }
-            }
+				guildId := player.voiceConnection.GuildID
+				select {
+				case err := <-player.ErrorChannel:
+					log.Printf("[PLAYER_ERR]: %v at guildId: %s\n", err, guildId)
+				default:
+				}
+			}
 
-            time.Sleep(time.Duration(int(time.Second) * logInterval))
-        }
-    }()
-    
-    return stop
+			time.Sleep(time.Duration(int(time.Second) * logInterval))
+		}
+	}()
+
+	return stop
 }
 
 // Logs to stdout the state of each player by guild id
 func (c *Client) ClientLogger(each func() string, logInterval int) chan struct{} {
-    stop := make(chan struct{})
+	stop := make(chan struct{})
 
-    go func() {
-        for {
-            select {
-            case <- stop:
-                return
-            default:
-            }
+	go func() {
+		for {
+			select {
+			case <-stop:
+				return
+			default:
+			}
 
-            logValue := each()
-            if logValue != "" {
-                log.Println("[CLIENT_LOGGER]:", logValue)
-            }
-            time.Sleep(time.Duration(int(time.Second) * logInterval))
-        }
-    }()
+			logValue := each()
+			if logValue != "" {
+				log.Println("[CLIENT_LOGGER]:", logValue)
+			}
+			time.Sleep(time.Duration(int(time.Second) * logInterval))
+		}
+	}()
 
-    return stop
+	return stop
 }
 
 func (c *Client) StartDisconnectionTimmer(s *dgo.Session, tickEvery int) chan struct{} {
@@ -155,12 +155,21 @@ func (c *Client) StartDisconnectionTimmer(s *dgo.Session, tickEvery int) chan st
 			}
 
 			for guild, player := range c.Players {
-				if s.VoiceConnections[guild] == nil {
+				voiceConnection := s.VoiceConnections[guild]
+				if voiceConnection == nil {
 					continue
 				}
 
-				if player.Player.State == enc.PlayerStateIdle {
+				members, err := s.GuildMembers(voiceConnection.GuildID, "", 0)
+				shouldTick := player.Player.State == enc.PlayerStateIdle || (len(members) == 0 && err != nil)
+				if err != nil {
+					log.Println(err)
+				}
+
+				if shouldTick {
 					timers[guild] += tickEvery
+				} else {
+					timers[guild] = 0
 				}
 
 				if timers[guild] >= MAX_IDLE_SECONDS {
@@ -655,6 +664,38 @@ func (c *Client) AliveCommand(s *dgo.Session, i *dgo.InteractionCreate) {
 	if err != nil {
 		log.Printf("Failed sending client message to guild %s, client_message: %s, error: %s",
 			i.GuildID,
+			msg,
+			err,
+		)
+	}
+}
+
+func (c *Client) LeaveCommand(s *dgo.Session, i *dgo.InteractionCreate) {
+	connection := c.Players[i.GuildID].voiceConnection
+	if connection == nil {
+		ReportGenericError("No connection to end", s, i)
+		return
+	}
+
+	// Stop the player/encoder if it's running for any reason
+	if c.Players[i.GuildID].Player.State == enc.PlayerStatePaused ||
+		c.Players[i.GuildID].Player.State == enc.PlayerStatePlaying {
+		c.Players[i.GuildID].CommandChannel <- enc.CommandStop{}
+	}
+
+	err := connection.Disconnect()
+	if err != nil {
+		log.Println(err)
+		ReportGenericError("No connection to end", s, i)
+		return
+	}
+}
+
+func ReportGenericError(msg string, session *dgo.Session, interaction *dgo.InteractionCreate) {
+	err := InteractionTextRespond(session, interaction, msg)
+	if err != nil {
+		log.Printf("Failed sending client message to guild %s, client_message: %s, error: %s",
+			interaction.GuildID,
 			msg,
 			err,
 		)
