@@ -18,10 +18,13 @@ const (
 	ALIVE_COMMAND_NAME  = "alive"
 	PLAY_COMMAND_NAME   = "play"
 	NEXT_COMMAND_NAME   = "next"
+	SKIP_COMMAND_NAME   = "skip" // Alias for /next
 	STOP_COMMAND_NAME   = "stop"
 	PAUSE_COMMAND_NAME  = "pause"
 	RESUME_COMMAND_NAME = "resume"
 	SEEK_COMMAND_NAME   = "ff"
+	LEAVE_COMMAND_NAME  = "leave"
+	LOOP_COMMAND_NAME   = "loop"
 )
 
 var commands = []*dgo.ApplicationCommand{
@@ -58,6 +61,10 @@ var commands = []*dgo.ApplicationCommand{
 		Description: "Play the next song immediately",
 	},
 	{
+		Name:        SKIP_COMMAND_NAME,
+		Description: "Play the next song immediately",
+	},
+	{
 		Name:        RESUME_COMMAND_NAME,
 		Description: "Resumes a paused song",
 	},
@@ -68,6 +75,10 @@ var commands = []*dgo.ApplicationCommand{
 	{
 		Name:        ALIVE_COMMAND_NAME,
 		Description: "Am I alive? o.O",
+	},
+	{
+		Name:        LEAVE_COMMAND_NAME,
+        Description: "I'll leave the channel :(",
 	},
 }
 
@@ -168,8 +179,12 @@ func main() {
 			client.AliveCommand(s, i)
 		case PLAY_COMMAND_NAME:
 			client.PlayCommand(s, i)
+
 		case NEXT_COMMAND_NAME:
 			client.NextCommand(s, i)
+		case SKIP_COMMAND_NAME:
+			client.NextCommand(s, i)
+
 		case STOP_COMMAND_NAME:
 			client.StopCommand(s, i)
 		case PAUSE_COMMAND_NAME:
@@ -178,6 +193,8 @@ func main() {
 			client.ResumeCommand(s, i)
 		case SEEK_COMMAND_NAME:
 			client.SeekCommand(s, i)
+        case LEAVE_COMMAND_NAME:
+			client.LeaveCommand(s, i)
 		default:
 			log.Printf("%s no such command: %s\n", i.GuildID, commandName)
 		}

@@ -154,38 +154,39 @@ func (c *Client) StartDisconnectionTimmer(s *dgo.Session, tickEvery int) chan st
 			default:
 			}
 
-			for guild, player := range c.Players {
-				voiceConnection := s.VoiceConnections[guild]
+			for guildId, player := range c.Players {
+				voiceConnection := s.VoiceConnections[guildId]
 				if voiceConnection == nil {
 					continue
 				}
 
-				members, err := s.GuildMembers(voiceConnection.GuildID, "", 0)
-				shouldTick := player.Player.State == enc.PlayerStateIdle || (len(members) == 0 && err != nil)
+				guild, err := s.State.Guild(guildId)
+				shouldTick := player.Player.State == enc.PlayerStateIdle ||
+					len(guild.VoiceStates) == 0 ||
+					err != nil // tick even tho the call above errored
 				if err != nil {
 					log.Println(err)
 				}
 
 				if shouldTick {
-					timers[guild] += tickEvery
+					timers[guildId] += tickEvery
 				} else {
-					timers[guild] = 0
+					timers[guildId] = 0
 				}
 
-				if timers[guild] >= MAX_IDLE_SECONDS {
-					if err := s.VoiceConnections[guild].Disconnect(); err != nil {
+				if timers[guildId] >= MAX_IDLE_SECONDS {
+					if err := s.VoiceConnections[guildId].Disconnect(); err != nil {
 						log.Println("[VOICE_IDLE_ERR]:", VOICE_IDLE_ERR)
-
 						// do not reset timer, try again later
 						continue
 					}
 
-					channelId := c.ActiveChannels[guild]
-					_, err := s.ChannelMessageSend(channelId, "@here leaving channel as I've been idle for more than 5 minutes...")
+					channelId := c.ActiveChannels[guildId]
+					_, err := s.ChannelMessageSend(channelId, "Leaving channel as I've been idle for more than 5 minutes...")
 					if err != nil {
-						log.Printf("Failed sending disconnection message to channel %s with guildId %s\n", channelId, guild)
+						log.Printf("Failed sending disconnection message to channel %s with guildId %s\n", channelId, guildId)
 					}
-					timers[guild] = 0
+					timers[guildId] = 0
 				}
 			}
 		}
