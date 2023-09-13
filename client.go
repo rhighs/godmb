@@ -161,12 +161,12 @@ func (c *Client) StartDisconnectionTimmer(s *dgo.Session, tickEvery int) chan st
 				}
 
 				guild, err := s.State.Guild(guildId)
-				shouldTick := player.Player.State == enc.PlayerStateIdle ||
-					len(guild.VoiceStates) == 0 ||
-					err != nil // tick even tho the call above errored
 				if err != nil {
 					log.Println(err)
 				}
+
+                // tick even tho the call above errored
+				shouldTick := player.Player.State == enc.PlayerStateIdle || len(guild.VoiceStates) == 0 
 
 				if shouldTick {
 					timers[guildId] += tickEvery
