@@ -1,5 +1,6 @@
 FROM ubuntu:latest
 
+RUN apt-get update --fix-missing -y
 RUN apt -y update
 RUN apt -y upgrade
 RUN apt install -y curl
