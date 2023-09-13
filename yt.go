@@ -13,41 +13,41 @@ import (
 )
 
 const (
-	REGEXP_PREFIX string = `<meta name="title" content="`
+	REGEXP_PREFIX string = `<meta name="title" content=,omitempty"`
 	LOG_YTCMD     bool   = true
 )
 
 type YTDLPOut struct {
-	ID      string `json:"id"`
-	Title   string `json:"title"`
+	ID      string `json:"id,omitempty"`
+	Title   string `json:"title,omitempty"`
 	Formats []struct {
-		FormatID   string  `json:"format_id"`
-		FormatNote string  `json:"format_note"`
-		Ext        string  `json:"ext"`
-		Protocol   string  `json:"protocol"`
-		Acodec     string  `json:"acodec"`
-		Vcodec     string  `json:"vcodec"`
-		URL        string  `json:"url"`
-		Width      int     `json:"width"`
-		Height     int     `json:"height"`
-		Fps        float64 `json:"fps"`
+		FormatID   string  `json:"format_id,omitempty"`
+		FormatNote string  `json:"format_note,omitempty"`
+		Ext        string  `json:"ext,omitempty"`
+		Protocol   string  `json:"protocol,omitempty"`
+		Acodec     string  `json:"acodec,omitempty"`
+		Vcodec     string  `json:"vcodec,omitempty"`
+		URL        string  `json:"url,omitempty"`
+		Width      int     `json:"width,omitempty"`
+		Height     int     `json:"height,omitempty"`
+		Fps        float64 `json:"fps,omitempty"`
 		Rows       int     `json:"rows,omitempty"`
 		Columns    int     `json:"columns,omitempty"`
 		Fragments  []struct {
-			URL      string  `json:"url"`
-			Duration float64 `json:"duration"`
+			URL      string  `json:"url,omitempty"`
+			Duration float64 `json:"duration,omitempty"`
 		} `json:"fragments,omitempty"`
-		Resolution  string  `json:"resolution"`
-		AspectRatio float64 `json:"aspect_ratio"`
+		Resolution  string  `json:"resolution,omitempty"`
+		AspectRatio float64 `json:"aspect_ratio,omitempty"`
 		HTTPHeaders struct {
-			UserAgent      string `json:"User-Agent"`
-			Accept         string `json:"Accept"`
-			AcceptLanguage string `json:"Accept-Language"`
-			SecFetchMode   string `json:"Sec-Fetch-Mode"`
-		} `json:"http_headers"`
-		AudioExt           string      `json:"audio_ext"`
-		VideoExt           string      `json:"video_ext"`
-		Format             string      `json:"format"`
+			UserAgent      string `json:"User-Agent,omitempty"`
+			Accept         string `json:"Accept,omitempty"`
+			AcceptLanguage string `json:"Accept-Language,omitempty"`
+			SecFetchMode   string `json:"Sec-Fetch-Mode,omitempty"`
+		} `json:"http_headers,omitempty"`
+		AudioExt           string      `json:"audio_ext,omitempty"`
+		VideoExt           string      `json:"video_ext,omitempty"`
+		Format             string      `json:"format,omitempty"`
 		Asr                int         `json:"asr,omitempty"`
 		Filesize           int         `json:"filesize,omitempty"`
 		SourcePreference   int         `json:"source_preference,omitempty"`
@@ -61,830 +61,830 @@ type YTDLPOut struct {
 		DynamicRange       interface{} `json:"dynamic_range,omitempty"`
 		Abr                float64     `json:"abr,omitempty"`
 		DownloaderOptions  struct {
-			HTTPChunkSize int `json:"http_chunk_size"`
+			HTTPChunkSize int `json:"http_chunk_size,omitempty"`
 		} `json:"downloader_options,omitempty"`
 		Container      string  `json:"container,omitempty"`
 		Vbr            float64 `json:"vbr,omitempty"`
 		FilesizeApprox int     `json:"filesize_approx,omitempty"`
-	} `json:"formats"`
+	} `json:"formats,omitempty"`
 	Thumbnails []struct {
-		URL        string `json:"url"`
-		Preference int    `json:"preference"`
-		ID         string `json:"id"`
+		URL        string `json:"url,omitempty"`
+		Preference int    `json:"preference,omitempty"`
+		ID         string `json:"id,omitempty"`
 		Height     int    `json:"height,omitempty"`
 		Width      int    `json:"width,omitempty"`
 		Resolution string `json:"resolution,omitempty"`
-	} `json:"thumbnails"`
-	Thumbnail         string      `json:"thumbnail"`
-	Description       string      `json:"description"`
-	Uploader          string      `json:"uploader"`
-	UploaderID        string      `json:"uploader_id"`
-	UploaderURL       string      `json:"uploader_url"`
-	ChannelID         string      `json:"channel_id"`
-	ChannelURL        string      `json:"channel_url"`
-	Duration          int         `json:"duration"`
-	ViewCount         int         `json:"view_count"`
-	AverageRating     interface{} `json:"average_rating"`
-	AgeLimit          int         `json:"age_limit"`
-	WebpageURL        string      `json:"webpage_url"`
-	Categories        []string    `json:"categories"`
-	Tags              []string    `json:"tags"`
-	PlayableInEmbed   bool        `json:"playable_in_embed"`
-	LiveStatus        string      `json:"live_status"`
-	ReleaseTimestamp  interface{} `json:"release_timestamp"`
-	FormatSortFields  []string    `json:"_format_sort_fields"`
+	} `json:"thumbnails,omitempty"`
+	Thumbnail         string      `json:"thumbnail,omitempty"`
+	Description       string      `json:"description,omitempty"`
+	Uploader          string      `json:"uploader,omitempty"`
+	UploaderID        string      `json:"uploader_id,omitempty"`
+	UploaderURL       string      `json:"uploader_url,omitempty"`
+	ChannelID         string      `json:"channel_id,omitempty"`
+	ChannelURL        string      `json:"channel_url,omitempty"`
+	Duration          int         `json:"duration,omitempty"`
+	ViewCount         int         `json:"view_count,omitempty"`
+	AverageRating     interface{} `json:"average_rating,omitempty"`
+	AgeLimit          int         `json:"age_limit,omitempty"`
+	WebpageURL        string      `json:"webpage_url,omitempty"`
+	Categories        []string    `json:"categories,omitempty"`
+	Tags              []string    `json:"tags,omitempty"`
+	PlayableInEmbed   bool        `json:"playable_in_embed,omitempty"`
+	LiveStatus        string      `json:"live_status,omitempty"`
+	ReleaseTimestamp  interface{} `json:"release_timestamp,omitempty"`
+	FormatSortFields  []string    `json:"_format_sort_fields,omitempty"`
 	AutomaticCaptions struct {
 		Af []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"af"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"af,omitempty"`
 		Ak []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ak"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ak,omitempty"`
 		Sq []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"sq"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"sq,omitempty"`
 		Am []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"am"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"am,omitempty"`
 		Ar []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ar"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ar,omitempty"`
 		Hy []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"hy"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"hy,omitempty"`
 		As []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"as"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"as,omitempty"`
 		Ay []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ay"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ay,omitempty"`
 		Az []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"az"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"az,omitempty"`
 		Bn []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"bn"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"bn,omitempty"`
 		Eu []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"eu"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"eu,omitempty"`
 		Be []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"be"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"be,omitempty"`
 		Bho []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"bho"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"bho,omitempty"`
 		Bs []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"bs"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"bs,omitempty"`
 		Bg []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"bg"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"bg,omitempty"`
 		My []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"my"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"my,omitempty"`
 		Ca []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ca"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ca,omitempty"`
 		Ceb []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ceb"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ceb,omitempty"`
 		ZhHans []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"zh-Hans"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"zh-Hans,omitempty"`
 		ZhHant []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"zh-Hant"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"zh-Hant,omitempty"`
 		Co []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"co"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"co,omitempty"`
 		Hr []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"hr"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"hr,omitempty"`
 		Cs []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"cs"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"cs,omitempty"`
 		Da []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"da"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"da,omitempty"`
 		Dv []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"dv"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"dv,omitempty"`
 		Nl []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"nl"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"nl,omitempty"`
 		EnOrig []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"en-orig"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"en-orig,omitempty"`
 		En []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"en"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"en,omitempty"`
 		Eo []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"eo"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"eo,omitempty"`
 		Et []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"et"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"et,omitempty"`
 		Ee []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ee"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ee,omitempty"`
 		Fil []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"fil"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"fil,omitempty"`
 		Fi []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"fi"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"fi,omitempty"`
 		Fr []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"fr"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"fr,omitempty"`
 		Gl []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"gl"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"gl,omitempty"`
 		Lg []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"lg"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"lg,omitempty"`
 		Ka []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ka"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ka,omitempty"`
 		De []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"de"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"de,omitempty"`
 		El []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"el"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"el,omitempty"`
 		Gn []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"gn"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"gn,omitempty"`
 		Gu []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"gu"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"gu,omitempty"`
 		Ht []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ht"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ht,omitempty"`
 		Ha []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ha"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ha,omitempty"`
 		Haw []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"haw"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"haw,omitempty"`
 		Iw []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"iw"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"iw,omitempty"`
 		Hi []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"hi"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"hi,omitempty"`
 		Hmn []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"hmn"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"hmn,omitempty"`
 		Hu []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"hu"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"hu,omitempty"`
 		Is []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"is"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"is,omitempty"`
 		Ig []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ig"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ig,omitempty"`
 		ID []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"id"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"id,omitempty"`
 		Ga []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ga"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ga,omitempty"`
 		It []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"it"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"it,omitempty"`
 		Ja []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ja"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ja,omitempty"`
 		Jv []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"jv"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"jv,omitempty"`
 		Kn []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"kn"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"kn,omitempty"`
 		Kk []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"kk"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"kk,omitempty"`
 		Km []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"km"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"km,omitempty"`
 		Rw []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"rw"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"rw,omitempty"`
 		Ko []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ko"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ko,omitempty"`
 		Kri []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"kri"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"kri,omitempty"`
 		Ku []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ku"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ku,omitempty"`
 		Ky []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ky"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ky,omitempty"`
 		Lo []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"lo"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"lo,omitempty"`
 		La []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"la"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"la,omitempty"`
 		Lv []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"lv"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"lv,omitempty"`
 		Ln []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ln"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ln,omitempty"`
 		Lt []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"lt"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"lt,omitempty"`
 		Lb []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"lb"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"lb,omitempty"`
 		Mk []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"mk"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"mk,omitempty"`
 		Mg []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"mg"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"mg,omitempty"`
 		Ms []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ms"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ms,omitempty"`
 		Ml []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ml"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ml,omitempty"`
 		Mt []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"mt"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"mt,omitempty"`
 		Mi []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"mi"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"mi,omitempty"`
 		Mr []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"mr"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"mr,omitempty"`
 		Mn []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"mn"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"mn,omitempty"`
 		Ne []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ne"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ne,omitempty"`
 		Nso []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"nso"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"nso,omitempty"`
 		No []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"no"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"no,omitempty"`
 		Ny []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ny"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ny,omitempty"`
 		Or []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"or"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"or,omitempty"`
 		Om []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"om"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"om,omitempty"`
 		Ps []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ps"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ps,omitempty"`
 		Fa []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"fa"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"fa,omitempty"`
 		Pl []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"pl"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"pl,omitempty"`
 		Pt []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"pt"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"pt,omitempty"`
 		Pa []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"pa"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"pa,omitempty"`
 		Qu []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"qu"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"qu,omitempty"`
 		Ro []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ro"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ro,omitempty"`
 		Ru []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ru"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ru,omitempty"`
 		Sm []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"sm"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"sm,omitempty"`
 		Sa []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"sa"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"sa,omitempty"`
 		Gd []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"gd"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"gd,omitempty"`
 		Sr []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"sr"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"sr,omitempty"`
 		Sn []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"sn"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"sn,omitempty"`
 		Sd []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"sd"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"sd,omitempty"`
 		Si []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"si"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"si,omitempty"`
 		Sk []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"sk"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"sk,omitempty"`
 		Sl []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"sl"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"sl,omitempty"`
 		So []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"so"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"so,omitempty"`
 		St []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"st"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"st,omitempty"`
 		Es []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"es"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"es,omitempty"`
 		Su []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"su"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"su,omitempty"`
 		Sw []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"sw"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"sw,omitempty"`
 		Sv []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"sv"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"sv,omitempty"`
 		Tg []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"tg"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"tg,omitempty"`
 		Ta []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ta"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ta,omitempty"`
 		Tt []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"tt"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"tt,omitempty"`
 		Te []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"te"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"te,omitempty"`
 		Th []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"th"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"th,omitempty"`
 		Ti []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ti"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ti,omitempty"`
 		Ts []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ts"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ts,omitempty"`
 		Tr []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"tr"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"tr,omitempty"`
 		Tk []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"tk"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"tk,omitempty"`
 		Uk []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"uk"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"uk,omitempty"`
 		Und []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"und"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"und,omitempty"`
 		Ur []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ur"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ur,omitempty"`
 		Ug []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"ug"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"ug,omitempty"`
 		Uz []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"uz"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"uz,omitempty"`
 		Vi []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"vi"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"vi,omitempty"`
 		Cy []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"cy"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"cy,omitempty"`
 		Fy []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"fy"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"fy,omitempty"`
 		Xh []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"xh"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"xh,omitempty"`
 		Yi []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"yi"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"yi,omitempty"`
 		Yo []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"yo"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"yo,omitempty"`
 		Zu []struct {
-			Ext  string `json:"ext"`
-			URL  string `json:"url"`
-			Name string `json:"name"`
-		} `json:"zu"`
-	} `json:"automatic_captions"`
-	Subtitles            struct{}    `json:"subtitles"`
-	CommentCount         int         `json:"comment_count"`
-	Chapters             interface{} `json:"chapters"`
-	LikeCount            int         `json:"like_count"`
-	Channel              string      `json:"channel"`
-	ChannelFollowerCount int         `json:"channel_follower_count"`
-	UploadDate           string      `json:"upload_date"`
-	Availability         string      `json:"availability"`
-	OriginalURL          string      `json:"original_url"`
-	WebpageURLBasename   string      `json:"webpage_url_basename"`
-	WebpageURLDomain     string      `json:"webpage_url_domain"`
-	Extractor            string      `json:"extractor"`
-	ExtractorKey         string      `json:"extractor_key"`
-	Playlist             interface{} `json:"playlist"`
-	PlaylistIndex        interface{} `json:"playlist_index"`
-	DisplayID            string      `json:"display_id"`
-	Fulltitle            string      `json:"fulltitle"`
-	DurationString       string      `json:"duration_string"`
-	IsLive               bool        `json:"is_live"`
-	WasLive              bool        `json:"was_live"`
-	RequestedSubtitles   interface{} `json:"requested_subtitles"`
-	HasDrm               interface{} `json:"_has_drm"`
+			Ext  string `json:"ext,omitempty"`
+			URL  string `json:"url,omitempty"`
+			Name string `json:"name,omitempty"`
+		} `json:"zu,omitempty"`
+	} `json:"automatic_captions,omitempty"`
+	Subtitles            struct{}    `json:"subtitles,omitempty"`
+	CommentCount         int         `json:"comment_count,omitempty"`
+	Chapters             interface{} `json:"chapters,omitempty"`
+	LikeCount            int         `json:"like_count,omitempty"`
+	Channel              string      `json:"channel,omitempty"`
+	ChannelFollowerCount int         `json:"channel_follower_count,omitempty"`
+	UploadDate           string      `json:"upload_date,omitempty"`
+	Availability         string      `json:"availability,omitempty"`
+	OriginalURL          string      `json:"original_url,omitempty"`
+	WebpageURLBasename   string      `json:"webpage_url_basename,omitempty"`
+	WebpageURLDomain     string      `json:"webpage_url_domain,omitempty"`
+	Extractor            string      `json:"extractor,omitempty"`
+	ExtractorKey         string      `json:"extractor_key,omitempty"`
+	Playlist             interface{} `json:"playlist,omitempty"`
+	PlaylistIndex        interface{} `json:"playlist_index,omitempty"`
+	DisplayID            string      `json:"display_id,omitempty"`
+	Fulltitle            string      `json:"fulltitle,omitempty"`
+	DurationString       string      `json:"duration_string,omitempty"`
+	IsLive               bool        `json:"is_live,omitempty"`
+	WasLive              bool        `json:"was_live,omitempty"`
+	RequestedSubtitles   interface{} `json:"requested_subtitles,omitempty"`
+	HasDrm               interface{} `json:"_has_drm,omitempty"`
 	RequestedDownloads   []struct {
 		RequestedFormats []struct {
-			Asr                interface{} `json:"asr"`
-			Filesize           int         `json:"filesize"`
-			FormatID           string      `json:"format_id"`
-			FormatNote         string      `json:"format_note"`
-			SourcePreference   int         `json:"source_preference"`
-			Fps                float64     `json:"fps"`
-			AudioChannels      interface{} `json:"audio_channels"`
-			Height             int         `json:"height"`
-			Quality            float64     `json:"quality"`
-			HasDrm             bool        `json:"has_drm"`
-			Tbr                float64     `json:"tbr"`
-			URL                string      `json:"url"`
-			Width              int         `json:"width"`
-			Language           interface{} `json:"language"`
-			LanguagePreference int         `json:"language_preference"`
-			Preference         interface{} `json:"preference"`
-			Ext                string      `json:"ext"`
-			Vcodec             string      `json:"vcodec"`
-			Acodec             string      `json:"acodec"`
-			DynamicRange       string      `json:"dynamic_range"`
+			Asr                interface{} `json:"asr,omitempty"`
+			Filesize           int         `json:"filesize,omitempty"`
+			FormatID           string      `json:"format_id,omitempty"`
+			FormatNote         string      `json:"format_note,omitempty"`
+			SourcePreference   int         `json:"source_preference,omitempty"`
+			Fps                float64     `json:"fps,omitempty"`
+			AudioChannels      interface{} `json:"audio_channels,omitempty"`
+			Height             int         `json:"height,omitempty"`
+			Quality            float64     `json:"quality,omitempty"`
+			HasDrm             bool        `json:"has_drm,omitempty"`
+			Tbr                float64     `json:"tbr,omitempty"`
+			URL                string      `json:"url,omitempty"`
+			Width              int         `json:"width,omitempty"`
+			Language           interface{} `json:"language,omitempty"`
+			LanguagePreference int         `json:"language_preference,omitempty"`
+			Preference         interface{} `json:"preference,omitempty"`
+			Ext                string      `json:"ext,omitempty"`
+			Vcodec             string      `json:"vcodec,omitempty"`
+			Acodec             string      `json:"acodec,omitempty"`
+			DynamicRange       string      `json:"dynamic_range,omitempty"`
 			Vbr                float64     `json:"vbr,omitempty"`
 			DownloaderOptions  struct {
-				HTTPChunkSize int `json:"http_chunk_size"`
-			} `json:"downloader_options"`
-			Container   string  `json:"container"`
-			Protocol    string  `json:"protocol"`
-			Resolution  string  `json:"resolution"`
-			AspectRatio float64 `json:"aspect_ratio"`
+				HTTPChunkSize int `json:"http_chunk_size,omitempty"`
+			} `json:"downloader_options,omitempty"`
+			Container   string  `json:"container,omitempty"`
+			Protocol    string  `json:"protocol,omitempty"`
+			Resolution  string  `json:"resolution,omitempty"`
+			AspectRatio float64 `json:"aspect_ratio,omitempty"`
 			HTTPHeaders struct {
-				UserAgent      string `json:"User-Agent"`
-				Accept         string `json:"Accept"`
-				AcceptLanguage string `json:"Accept-Language"`
-				SecFetchMode   string `json:"Sec-Fetch-Mode"`
-			} `json:"http_headers"`
-			VideoExt string  `json:"video_ext"`
-			AudioExt string  `json:"audio_ext"`
-			Format   string  `json:"format"`
+				UserAgent      string `json:"User-Agent,omitempty"`
+				Accept         string `json:"Accept,omitempty"`
+				AcceptLanguage string `json:"Accept-Language,omitempty"`
+				SecFetchMode   string `json:"Sec-Fetch-Mode,omitempty"`
+			} `json:"http_headers,omitempty"`
+			VideoExt string  `json:"video_ext,omitempty"`
+			AudioExt string  `json:"audio_ext,omitempty"`
+			Format   string  `json:"format,omitempty"`
 			Abr      float64 `json:"abr,omitempty"`
-		} `json:"requested_formats"`
-		Format               string  `json:"format"`
-		FormatID             string  `json:"format_id"`
-		Ext                  string  `json:"ext"`
-		Protocol             string  `json:"protocol"`
-		FormatNote           string  `json:"format_note"`
-		FilesizeApprox       int     `json:"filesize_approx"`
-		Tbr                  float64 `json:"tbr"`
-		Width                int     `json:"width"`
-		Height               int     `json:"height"`
-		Resolution           string  `json:"resolution"`
-		Fps                  float64 `json:"fps"`
-		DynamicRange         string  `json:"dynamic_range"`
-		Vcodec               string  `json:"vcodec"`
-		Vbr                  float64 `json:"vbr"`
-		AspectRatio          float64 `json:"aspect_ratio"`
-		Acodec               string  `json:"acodec"`
-		Abr                  float64 `json:"abr"`
-		Asr                  int     `json:"asr"`
-		AudioChannels        int     `json:"audio_channels"`
-		Epoch                int     `json:"epoch"`
-		Filename             string  `json:"_filename"`
-		WriteDownloadArchive bool    `json:"__write_download_archive"`
-	} `json:"requested_downloads"`
+		} `json:"requested_formats,omitempty"`
+		Format               string  `json:"format,omitempty"`
+		FormatID             string  `json:"format_id,omitempty"`
+		Ext                  string  `json:"ext,omitempty"`
+		Protocol             string  `json:"protocol,omitempty"`
+		FormatNote           string  `json:"format_note,omitempty"`
+		FilesizeApprox       int     `json:"filesize_approx,omitempty"`
+		Tbr                  float64 `json:"tbr,omitempty"`
+		Width                int     `json:"width,omitempty"`
+		Height               int     `json:"height,omitempty"`
+		Resolution           string  `json:"resolution,omitempty"`
+		Fps                  float64 `json:"fps,omitempty"`
+		DynamicRange         string  `json:"dynamic_range,omitempty"`
+		Vcodec               string  `json:"vcodec,omitempty"`
+		Vbr                  float64 `json:"vbr,omitempty"`
+		AspectRatio          float64 `json:"aspect_ratio,omitempty"`
+		Acodec               string  `json:"acodec,omitempty"`
+		Abr                  float64 `json:"abr,omitempty"`
+		Asr                  int     `json:"asr,omitempty"`
+		AudioChannels        int     `json:"audio_channels,omitempty"`
+		Epoch                int     `json:"epoch,omitempty"`
+		Filename             string  `json:"_filename,omitempty"`
+		WriteDownloadArchive bool    `json:"__write_download_archive,omitempty"`
+	} `json:"requested_downloads,omitempty"`
 	RequestedFormats []struct {
-		Asr                interface{} `json:"asr"`
-		Filesize           int         `json:"filesize"`
-		FormatID           string      `json:"format_id"`
-		FormatNote         string      `json:"format_note"`
-		SourcePreference   int         `json:"source_preference"`
-		Fps                float64     `json:"fps"`
-		AudioChannels      interface{} `json:"audio_channels"`
-		Height             int         `json:"height"`
-		Quality            float64     `json:"quality"`
-		HasDrm             bool        `json:"has_drm"`
-		Tbr                float64     `json:"tbr"`
-		URL                string      `json:"url"`
-		Width              int         `json:"width"`
-		Language           interface{} `json:"language"`
-		LanguagePreference int         `json:"language_preference"`
-		Preference         interface{} `json:"preference"`
-		Ext                string      `json:"ext"`
-		Vcodec             string      `json:"vcodec"`
-		Acodec             string      `json:"acodec"`
-		DynamicRange       string      `json:"dynamic_range"`
+		Asr                interface{} `json:"asr,omitempty"`
+		Filesize           int         `json:"filesize,omitempty"`
+		FormatID           string      `json:"format_id,omitempty"`
+		FormatNote         string      `json:"format_note,omitempty"`
+		SourcePreference   int         `json:"source_preference,omitempty"`
+		Fps                float64     `json:"fps,omitempty"`
+		AudioChannels      interface{} `json:"audio_channels,omitempty"`
+		Height             int         `json:"height,omitempty"`
+		Quality            float64     `json:"quality,omitempty"`
+		HasDrm             bool        `json:"has_drm,omitempty"`
+		Tbr                float64     `json:"tbr,omitempty"`
+		URL                string      `json:"url,omitempty"`
+		Width              int         `json:"width,omitempty"`
+		Language           interface{} `json:"language,omitempty"`
+		LanguagePreference int         `json:"language_preference,omitempty"`
+		Preference         interface{} `json:"preference,omitempty"`
+		Ext                string      `json:"ext,omitempty"`
+		Vcodec             string      `json:"vcodec,omitempty"`
+		Acodec             string      `json:"acodec,omitempty"`
+		DynamicRange       string      `json:"dynamic_range,omitempty"`
 		Vbr                float64     `json:"vbr,omitempty"`
 		DownloaderOptions  struct {
-			HTTPChunkSize int `json:"http_chunk_size"`
-		} `json:"downloader_options"`
-		Container   string  `json:"container"`
-		Protocol    string  `json:"protocol"`
-		Resolution  string  `json:"resolution"`
-		AspectRatio float64 `json:"aspect_ratio"`
+			HTTPChunkSize int `json:"http_chunk_size,omitempty"`
+		} `json:"downloader_options,omitempty"`
+		Container   string  `json:"container,omitempty"`
+		Protocol    string  `json:"protocol,omitempty"`
+		Resolution  string  `json:"resolution,omitempty"`
+		AspectRatio float64 `json:"aspect_ratio,omitempty"`
 		HTTPHeaders struct {
-			UserAgent      string `json:"User-Agent"`
-			Accept         string `json:"Accept"`
-			AcceptLanguage string `json:"Accept-Language"`
-			SecFetchMode   string `json:"Sec-Fetch-Mode"`
-		} `json:"http_headers"`
-		VideoExt string  `json:"video_ext"`
-		AudioExt string  `json:"audio_ext"`
-		Format   string  `json:"format"`
+			UserAgent      string `json:"User-Agent,omitempty"`
+			Accept         string `json:"Accept,omitempty"`
+			AcceptLanguage string `json:"Accept-Language,omitempty"`
+			SecFetchMode   string `json:"Sec-Fetch-Mode,omitempty"`
+		} `json:"http_headers,omitempty"`
+		VideoExt string  `json:"video_ext,omitempty"`
+		AudioExt string  `json:"audio_ext,omitempty"`
+		Format   string  `json:"format,omitempty"`
 		Abr      float64 `json:"abr,omitempty"`
-	} `json:"requested_formats"`
-	Format         string      `json:"format"`
-	FormatID       string      `json:"format_id"`
-	Ext            string      `json:"ext"`
-	Protocol       string      `json:"protocol"`
-	Language       interface{} `json:"language"`
-	FormatNote     string      `json:"format_note"`
-	FilesizeApprox int         `json:"filesize_approx"`
-	Tbr            float64     `json:"tbr"`
-	Width          int         `json:"width"`
-	Height         int         `json:"height"`
-	Resolution     string      `json:"resolution"`
-	Fps            float64     `json:"fps"`
-	DynamicRange   string      `json:"dynamic_range"`
-	Vcodec         string      `json:"vcodec"`
-	Vbr            float64     `json:"vbr"`
-	StretchedRatio interface{} `json:"stretched_ratio"`
-	AspectRatio    float64     `json:"aspect_ratio"`
-	Acodec         string      `json:"acodec"`
-	Abr            float64     `json:"abr"`
-	Asr            int         `json:"asr"`
-	AudioChannels  int         `json:"audio_channels"`
-	Epoch          int         `json:"epoch"`
-	Type           string      `json:"_type"`
+	} `json:"requested_formats,omitempty"`
+	Format         string      `json:"format,omitempty"`
+	FormatID       string      `json:"format_id,omitempty"`
+	Ext            string      `json:"ext,omitempty"`
+	Protocol       string      `json:"protocol,omitempty"`
+	Language       interface{} `json:"language,omitempty"`
+	FormatNote     string      `json:"format_note,omitempty"`
+	FilesizeApprox int         `json:"filesize_approx,omitempty"`
+	Tbr            float64     `json:"tbr,omitempty"`
+	Width          int         `json:"width,omitempty"`
+	Height         int         `json:"height,omitempty"`
+	Resolution     string      `json:"resolution,omitempty"`
+	Fps            float64     `json:"fps,omitempty"`
+	DynamicRange   string      `json:"dynamic_range,omitempty"`
+	Vcodec         string      `json:"vcodec,omitempty"`
+	Vbr            float64     `json:"vbr,omitempty"`
+	StretchedRatio interface{} `json:"stretched_ratio,omitempty"`
+	AspectRatio    float64     `json:"aspect_ratio,omitempty"`
+	Acodec         string      `json:"acodec,omitempty"`
+	Abr            float64     `json:"abr,omitempty"`
+	Asr            int         `json:"asr,omitempty"`
+	AudioChannels  int         `json:"audio_channels,omitempty"`
+	Epoch          int         `json:"epoch,omitempty"`
+	Type           string      `json:"_type,omitempty"`
 	Version        struct {
-		Version        string      `json:"version"`
-		CurrentGitHead interface{} `json:"current_git_head"`
-		ReleaseGitHead string      `json:"release_git_head"`
-		Repository     string      `json:"repository"`
-	} `json:"_version"`
+		Version        string      `json:"version,omitempty"`
+		CurrentGitHead interface{} `json:"current_git_head,omitempty"`
+		ReleaseGitHead string      `json:"release_git_head,omitempty"`
+		Repository     string      `json:"repository,omitempty"`
+	} `json:"_version,omitempty"`
 }
 
 var YTDLPPath string = ""
@@ -983,7 +983,7 @@ func YoutubeMediaUrl(videoUrl string) (string, error) {
 
 	var ytdlOutput YTDLPOut
 	if err := json.Unmarshal(stdout, &ytdlOutput); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return "", err
 	}
 
