@@ -942,35 +942,69 @@ func IsYoutubeUrl(url string) bool {
 	return false
 }
 
+type YTOmbedResponse struct {
+	Title           string `json:"title,omitempty"`
+	AuthorName      string `json:"author_name,omitempty"`
+	AuthorURL       string `json:"author_url,omitempty"`
+	Type            string `json:"type,omitempty"`
+	Height          int    `json:"height,omitempty"`
+	Width           int    `json:"width,omitempty"`
+	Version         string `json:"version,omitempty"`
+	ProviderName    string `json:"provider_name,omitempty"`
+	ProviderURL     string `json:"provider_url,omitempty"`
+	ThumbnailHeight int    `json:"thumbnail_height,omitempty"`
+	ThumbnailWidth  int    `json:"thumbnail_width,omitempty"`
+	ThumbnailURL    string `json:"thumbnail_url,omitempty"`
+	HTML            string `json:"html,omitempty"`
+}
+
 func ResolveVideoTitle(URL string) (string, error) {
-	resp, err := http.Get(URL)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://www.youtube.com/oembed?format=json&url=%s", URL), nil)
 	if err != nil {
-		return "", fmt.Errorf("Could not find any title at: %s (got err: %v)", URL, err)
+		return "", fmt.Errorf("Failed creating youtube request at: %s (got err: %v)", URL, err)
+	}
+
+	// req.Header.Set("cookie", "<some_cookie_data( is this even needed? )>")
+
+	req.Header.Set("authority", "www.youtube.com")
+	req.Header.Set("accept", "*/*")
+	req.Header.Set("accept-language", "en-US,en;q=0.9")
+	req.Header.Set("cache-control", "no-cache")
+	req.Header.Set("pragma", "no-cache")
+	req.Header.Set("referer", URL)
+	req.Header.Set("sec-ch-ua", `"Chromium";v="118", "Brave";v="118", "Not=A?Brand";v="99"`)
+	req.Header.Set("sec-ch-ua-mobile", "?0")
+	req.Header.Set("sec-ch-ua-model", `""`)
+	req.Header.Set("sec-ch-ua-platform", `"Linux"`)
+	req.Header.Set("sec-ch-ua-platform-version", `"10.0.0"`)
+	req.Header.Set("sec-fetch-dest", "empty")
+	req.Header.Set("sec-fetch-mode", "cors")
+	req.Header.Set("sec-fetch-site", "same-origin")
+	req.Header.Set("sec-gpc", "1")
+	req.Header.Set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("Failed firing youtube request at: %s (got err: %v)", URL, err)
 	}
 	defer resp.Body.Close()
 
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("Could not find any title at: %s (got err: %v)", URL, err)
+	if resp.StatusCode != 200 {
+		bodyStr, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return "", fmt.Errorf("Failed firing youtube request at: %s (got err: %v)", URL, err)
+		}
+
+		return "", fmt.Errorf("Request at %s gave status code: %d (got response: %s)", URL, resp.StatusCode, bodyStr)
 	}
 
-	matched := videoTitleRegexp.FindAllStringSubmatch(string(bodyBytes), 1)
-	if len(matched[0]) == 0 {
-		return "", fmt.Errorf("Could not find any title at: %s", URL)
+	var result YTOmbedResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", fmt.Errorf("Failed decoding youtube response at: %s (got err: %v)", URL, err)
 	}
 
-	str := matched[0][0]
-	idx := strings.Index(str, ">")
-
-	// This happened on a few occasions, better still checking it
-	if len(REGEXP_PREFIX) <= idx ||
-		len(str) <= len(REGEXP_PREFIX) ||
-		len(str) <= idx-1 {
-		return "", fmt.Errorf("Could not find any title at: %s (got matched str: %s)", URL, str)
-	}
-	str = str[len(REGEXP_PREFIX) : idx-1]
-
-	return str, nil
+	return result.Title, nil
 }
 
 func YoutubeMediaUrl(videoUrl string) (string, error) {
