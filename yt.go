@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -943,17 +942,34 @@ func IsYoutubeUrl(url string) bool {
 	return false
 }
 
-func GetYTVideoTitle(URL string) (string, error) {
-	resp, _ := http.Get(URL)
+func ResolveVideoTitle(URL string) (string, error) {
+	resp, err := http.Get(URL)
+	if err != nil {
+		return "", fmt.Errorf("Could not find any title at: %s (got err: %v)", URL, err)
+	}
 	defer resp.Body.Close()
-	bodyBytes, _ := io.ReadAll(resp.Body)
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("Could not find any title at: %s (got err: %v)", URL, err)
+	}
+
 	matched := videoTitleRegexp.FindAllStringSubmatch(string(bodyBytes), 1)
 	if len(matched[0]) == 0 {
-		return "", errors.New("Could find any title at: " + URL)
+		return "", fmt.Errorf("Could not find any title at: %s", URL)
 	}
+
 	str := matched[0][0]
 	idx := strings.Index(str, ">")
+
+	// This happened on a few occasions, better still checking it
+	if len(REGEXP_PREFIX) <= idx ||
+		len(str) <= len(REGEXP_PREFIX) ||
+		len(str) <= idx-1 {
+		return "", fmt.Errorf("Could not find any title at: %s (got matched str: %s)", URL, str)
+	}
 	str = str[len(REGEXP_PREFIX) : idx-1]
+
 	return str, nil
 }
 
@@ -999,28 +1015,27 @@ func YoutubeMediaUrl(videoUrl string) (string, error) {
 }
 
 func UpdateYTDLP() {
-    args := []string{
-        "--update",
-    }
+	args := []string{
+		"--update",
+	}
 
-    cmd := exec.Command(
-        YTDLPPath,
-        args...,
-    )
+	cmd := exec.Command(
+		YTDLPPath,
+		args...,
+	)
 
 	if LOG_YTCMD {
 		log.Println("[YTDL_CMD_UPDATE]:", YTDLPPath, strings.Join(args, " "))
 	}
 
-    if err := cmd.Start(); err != nil {
+	if err := cmd.Start(); err != nil {
 		log.Println("[YTDL_CMD_UPDATE_ERR]:", YTDLPPath, strings.Join(args, " "))
-    }
+	}
 
-    if err := cmd.Wait(); err != nil {
-        if exitErr, ok := err.(*exec.ExitError); ok {
-            log.Println("[YTDL_CMD_UPDATE_EXITCODE]:",
-                YTDLPPath, strings.Join(args, " "), "code: ", exitErr.ExitCode())
-        }
-    }
+	if err := cmd.Wait(); err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			log.Println("[YTDL_CMD_UPDATE_EXITCODE]:",
+				YTDLPPath, strings.Join(args, " "), "code: ", exitErr.ExitCode())
+		}
+	}
 }
-

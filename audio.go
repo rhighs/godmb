@@ -34,7 +34,7 @@ func ResolveAudioSource(input string) (Track, error) {
 
 		track.WebURL = input
 		track.MediaURL = mediaUrl
-		track.Title, err = GetYTVideoTitle(input)
+		track.Title, err = ResolveVideoTitle(input)
 
 		if err != nil {
 			return track, err
@@ -72,7 +72,7 @@ func ResolveAudioSource(input string) (Track, error) {
 
 	track.MediaURL = mediaUrl
 	track.WebURL = webUrl
-	track.Title, err = GetYTVideoTitle(webUrl)
+	track.Title, err = ResolveVideoTitle(webUrl)
 	if err != nil {
 		return track, err
 	}
