@@ -24,7 +24,6 @@ const (
 	RESUME_COMMAND_NAME = "resume"
 	SEEK_COMMAND_NAME   = "ff"
 	LEAVE_COMMAND_NAME  = "leave"
-	LOOP_COMMAND_NAME   = "loop"
 )
 
 var commands = []*dgo.ApplicationCommand{
@@ -78,7 +77,7 @@ var commands = []*dgo.ApplicationCommand{
 	},
 	{
 		Name:        LEAVE_COMMAND_NAME,
-        Description: "I'll leave the channel :(",
+		Description: "I'll leave the channel :(",
 	},
 }
 
@@ -109,16 +108,16 @@ func main() {
 		"",
 		"A list of guild id for every discord server the bot will operate (comma separated)",
 	)
-    logStatePtr := flags.Int(
-        "log-state",
-        0,
-        "Log each player playing state by guild id",
-    )
-    logPlaybackEventsPtr := flags.Int(
-        "log-player-err",
-        0,
-        "Log each player error events",
-    )
+	logStatePtr := flags.Int(
+		"log-state",
+		0,
+		"Log each player playing state by guild id",
+	)
+	logPlaybackEventsPtr := flags.Int(
+		"log-player-err",
+		0,
+		"Log each player error events",
+	)
 	if err := flags.Parse(os.Args[1:]); err != nil {
 		log.Fatal(err)
 	}
@@ -193,7 +192,7 @@ func main() {
 			client.ResumeCommand(s, i)
 		case SEEK_COMMAND_NAME:
 			client.SeekCommand(s, i)
-        case LEAVE_COMMAND_NAME:
+		case LEAVE_COMMAND_NAME:
 			client.LeaveCommand(s, i)
 		default:
 			log.Printf("%s no such command: %s\n", i.GuildID, commandName)
@@ -220,57 +219,57 @@ func main() {
 
 	defer s.Close()
 
-    stoppingChannels := make([]chan struct{}, 0)
+	stoppingChannels := make([]chan struct{}, 0)
 
 	timerStop := client.StartDisconnectionTimmer(s, 10)
-    stoppingChannels = append(stoppingChannels, timerStop)
+	stoppingChannels = append(stoppingChannels, timerStop)
 
-    if *logStatePtr != 0 {
-        loggerStop := client.ClientLogger(func() string {
-            out := ""
-            for guildId := range client.ActiveChannels {
-                for _, player := range client.Players {
-                    if player.voiceConnection.GuildID == guildId {
-                        playerState := player.Player.State.String()
-                        out = fmt.Sprintf(
-                            "player state %s at guildId %s",
-                            playerState,
-                            guildId,
-                        )
-                    }
-                }
-            }
-            return out
-        }, *logStatePtr)
-        stoppingChannels = append(stoppingChannels, loggerStop)
-    }
+	if *logStatePtr != 0 {
+		loggerStop := client.ClientLogger(func() string {
+			out := ""
+			for guildId := range client.ActiveChannels {
+				for _, player := range client.Players {
+					if player.voiceConnection.GuildID == guildId {
+						playerState := player.Player.State.String()
+						out = fmt.Sprintf(
+							"player state %s at guildId %s",
+							playerState,
+							guildId,
+						)
+					}
+				}
+			}
+			return out
+		}, *logStatePtr)
+		stoppingChannels = append(stoppingChannels, loggerStop)
+	}
 
-    if *logPlaybackEventsPtr != 0 {
-        loggerStop := client.ClientPlaybacksLogger(*logPlaybackEventsPtr)
-        stoppingChannels = append(stoppingChannels, loggerStop)
-    }
+	if *logPlaybackEventsPtr != 0 {
+		loggerStop := client.ClientPlaybacksLogger(*logPlaybackEventsPtr)
+		stoppingChannels = append(stoppingChannels, loggerStop)
+	}
 
-    // Start update watcher process
-    go func() {
-        stopUpdateWatcher := make(chan struct{})
-        stoppingChannels = append(stoppingChannels, stopUpdateWatcher)
-        for {
-            select {
-            case <-stopUpdateWatcher:
-                break;
-            default:
-            }
-            time.Sleep(1 * time.Minute)
-        }
-    }()
+	// Start update watcher process
+	go func() {
+		stopUpdateWatcher := make(chan struct{})
+		stoppingChannels = append(stoppingChannels, stopUpdateWatcher)
+		for {
+			select {
+			case <-stopUpdateWatcher:
+				break
+			default:
+			}
+			time.Sleep(1 * time.Minute)
+		}
+	}()
 
-    defer func() {
-        for _, stoppingChannel := range stoppingChannels {
-            stoppingChannel <- struct{}{}
-        }
-    }()
+	defer func() {
+		for _, stoppingChannel := range stoppingChannels {
+			stoppingChannel <- struct{}{}
+		}
+	}()
 
-    // Entire program stops
+	// Entire program stops
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 	log.Printf("Press Ctrl+C to exit")

@@ -69,11 +69,9 @@ type Command interface{}
 type CommandStop struct{}
 type CommandPause struct{}
 type CommandResume struct{}
-type CommandStartLooping struct{}
-type CommandStopLooping struct{}
-type CommandSeek float32             // In seconds.
-type CommandGetPlaybackTime struct{} // Gets the playback time.
-type CommandGetDuration struct{}     // Attempts to get the duration. Only succeeds if the encoder is already done.
+type CommandSeek float32
+type CommandGetPlaybackTime struct{}
+type CommandGetDuration struct{} // Attempts to get the duration. Only succeeds if the encoder is already done.
 
 type Response interface{}
 
@@ -86,7 +84,7 @@ func DefaultOptions(ffmpegPath string) EncOptions {
 		PcmOptions:    getDefaultPcmOptions(ffmpegPath),
 		FrameSize:     960,
 		Bitrate:       64000,
-		MaxCacheBytes: 20000000,
+		MaxCacheBytes: 4 * 1024 * 1024,
 	}
 }
 
@@ -129,12 +127,13 @@ func (e *Enc) GetOpusFrames(input string, opts EncOptions, ch chan<- []byte, err
 	maxSamples := opts.FrameSize * opts.Channels
 	maxBytes := maxSamples * 2
 
-	cacheSize := 0
-	opusFrames := make([][]byte, 0, 512)
 	nof := 0
-	frameCh := make(chan []byte, 8)
+
 	sampleBytes := make([]byte, maxBytes)
+	opusFrames := make([][]byte, 0, 512)
 	samples := make([]int16, maxSamples)
+
+	frameCh := make(chan []byte, 8)
 
 	encoderDone := make(chan struct{})
 	encoderStop := make(chan struct{})
@@ -142,8 +141,7 @@ func (e *Enc) GetOpusFrames(input string, opts EncOptions, ch chan<- []byte, err
 	encoderPause := make(chan struct{})
 
 	encoderRunning := true
-	paused := false
-	loop := false
+	encoderPaused := false
 
 	go func() {
 		killedFfmpeg := false
@@ -159,7 +157,9 @@ func (e *Enc) GetOpusFrames(input string, opts EncOptions, ch chan<- []byte, err
 				killedFfmpeg = true
 				break encoderLoop
 			case <-encoderPause:
-				<-encoderResume // Wait for a resume signal
+				encoderPaused = true
+				<-encoderResume
+				encoderPaused = false
 			default:
 			}
 
@@ -177,21 +177,12 @@ func (e *Enc) GetOpusFrames(input string, opts EncOptions, ch chan<- []byte, err
 			}
 
 			// Encode to opus
-            frame, err := e.encoder.Encode(samples, opts.FrameSize, maxBytes)
+			frame, err := e.encoder.Encode(samples, opts.FrameSize, maxBytes)
 			if err != nil {
 				errCh <- err
 			}
 
-			/* Do not check cache state
-            if cacheSize > opts.MaxCacheBytes {
-			 	errCh <- &CacheOverflowError{
-			 		MaxCacheBytes: opts.MaxCacheBytes,
-			 	}
-			 	break
-			}
-            */ 
-
-            // Send frame to consumer
+			// Send frame to consumer
 			frameCh <- frame
 		}
 
@@ -217,12 +208,27 @@ func (e *Enc) GetOpusFrames(input string, opts EncOptions, ch chan<- []byte, err
 
 	e.State = PlayerStatePlaying
 
-    encoderInHold := false
+	lastCacheSize := 0
+	playerPaused := false
+
 loop:
 	for {
 		select {
 		case v := <-frameCh:
 			opusFrames = append(opusFrames, v)
+
+			cacheSize := 0
+			for _, frames := range opusFrames[nof:] {
+				cacheSize += len(frames)
+			}
+
+			if !encoderPaused && cacheSize >= opts.MaxCacheBytes {
+				encoderPause <- struct{}{}
+				opusFrames = opusFrames[nof:]
+				nof = 0
+			}
+
+			lastCacheSize = cacheSize
 		case <-encoderDone:
 			encoderRunning = false
 		case receivedCmd := <-cmdCh:
@@ -235,22 +241,15 @@ loop:
 				}
 				break loop
 			case CommandPause:
-				paused = true
 				e.State = PlayerStatePaused
-				encoderPause <- struct{}{}
+				playerPaused = true
 				e.Notify(PlayerEventPaused)
 			case CommandResume:
-				paused = false
 				e.State = PlayerStatePlaying
-				encoderResume <- struct{}{}
+				playerPaused = false
 				e.Notify(PlayerEventResumed)
-			case CommandStartLooping:
-				e.State = PlayerStatePlaying
-				loop = true
 			case CommandSeek:
 				nof = int(float32(v) * framesPerSecond)
-			case CommandStopLooping:
-				loop = false
 			case CommandGetPlaybackTime:
 				respCh <- ResponsePlaybackTime(float32(nof / int(framesPerSecond)))
 			case CommandGetDuration:
@@ -260,49 +259,31 @@ loop:
 			time.Sleep(2 * time.Millisecond)
 		}
 
-        // Audio is playing, send it to caller channel
-		if !paused && nof < len(opusFrames) {
+		if encoderPaused && !playerPaused {
+			cacheSizeLeft := 0
+			for _, frames := range opusFrames[nof:] {
+				cacheSizeLeft += len(frames)
+			}
+
+			if cacheSizeLeft < lastCacheSize/3 {
+				encoderResume <- struct{}{}
+			}
+		}
+
+		if !playerPaused && nof < len(opusFrames) {
 			select {
 			case ch <- opusFrames[nof]:
-				cacheSize -= len(opusFrames[nof])
 				nof++
 			default:
 			}
 		}
 
 		if !encoderRunning && nof >= len(opusFrames) {
-			if loop {
-				nof = 0
-			} else {
-				// We're done sending opus data.
-				break
-			}
+			break
 		}
-
-		// Cut the cache if we're going too far with the memory
-		if len(opusFrames) >= opts.MaxCacheBytes {
-            // Pause the encoder, lets consume some data
-            encoderPause <- struct{}{}
-            encoderInHold = true
-
-			opusFrames = opusFrames[nof:]
-			nof = 0
-			cacheSize = len(opusFrames)
-		}
-
-        // Enough data has been consumed, collect more
-        if encoderInHold && len(opusFrames) <= opts.MaxCacheBytes {
-            encoderResume <- struct{}{}
-            encoderInHold = false
-        }
 	}
 
-	// Wait for the encoder to finish if it's still running.
-	if encoderRunning {
-		<-encoderDone
-		close(respCh)
-	}
-
+	close(respCh)
 	e.State = PlayerStateIdle
 	e.Notify(PlayerEventTrackEnded)
 }
