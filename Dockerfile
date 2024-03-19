@@ -15,12 +15,11 @@ RUN chmod 700 /usr/local/bin/yt-dlp  # Make executable
 COPY go.mod ./
 COPY go.sum ./
 
-RUN go mod download
-
+COPY Makefile ./
 COPY *.go ./
 COPY enc/ ./enc
 
-RUN go build -o /ndmb
+RUN make build
 
-ENTRYPOINT ["/ndmb"]
-CMD ["--ytdlp", "/usr/local/bin/yt-dlp", "--ffmpeg", "/usr/bin/ffmpeg"]
+ENTRYPOINT ["/godmb"]
+CMD ["--ytdlp", "/usr/local/bin/yt-dlp", "--ffmpeg", "/usr/bin/ffmpeg", "--log-player-err", "10"]
