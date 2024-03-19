@@ -84,7 +84,7 @@ func DefaultOptions(ffmpegPath string) EncOptions {
 		PcmOptions:    getDefaultPcmOptions(ffmpegPath),
 		FrameSize:     960,
 		Bitrate:       64000,
-		MaxCacheBytes: 4 * 1024 * 1024,
+		MaxCacheBytes: 1 * 1024 * 1024,
 	}
 }
 
