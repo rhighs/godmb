@@ -5,8 +5,7 @@ VERSION:=latest
 .PHONY: build
 build:
 	go mod download
-	go mod tidy
-	CGO_ENABLED=0 go build -v -ldflags='-s -w' -o $(BIN) .
+	go build -v -ldflags='-s -w' -o $(BIN) .
 
 .PHONY: run
 run:

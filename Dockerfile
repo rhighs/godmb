@@ -7,6 +7,7 @@ RUN apt install -y curl
 RUN apt install -y ffmpeg
 RUN apt install -y golang
 RUN apt install -y python3
+RUN apt install -y make
 
 # Took from ytdlp wiki: https://github.com/yt-dlp/yt-dlp/wiki/Installation
 RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
